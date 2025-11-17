@@ -15,6 +15,17 @@ This guide provides step-by-step workflows to diagnose visibility issues, stale 
 - Document download blocked  
 - Security updates not reflected  
 - EventType mismatch  
+- JCIT Case Type Mismatch (CMS sending non-standard case type)
+
+---
+
+## High-Level Issues
+
+### JCIT Case Type Mismatch  
+When a CMS sends a case type value that does not match any JCIT-approved case type, re:Search cannot map the case to a public-access rule. This often results in incorrect padlock behavior even when caseSecurity and documentSecurity values are set correctly.
+
+See the full troubleshooting article:  
+[Case Type Mismatch – JCIT Standard Enforcement Issue](./case-type-mismatch.md)
 
 ---
 
