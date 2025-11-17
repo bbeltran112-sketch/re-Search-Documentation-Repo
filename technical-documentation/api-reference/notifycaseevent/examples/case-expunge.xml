@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Body xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <NotifyCaseEvent xmlns="urn:oasis:names:tc:legalxml-courtfiling:wsdl:WebServiceMessagingProfile-Definitions-4.0">
+    <NotifyCaseEventRequest>
+      <NotifyCaseEventMessage xmlns="urn:tyler:ecf:extensions:CaseNotifyMessage">
+
+        <!-- Use CaseExpunge when a case is expunged and should be fully removed from re:Search. -->
+        <!-- re:Search Action: Runs GetCase; case will be removed if indicated. -->
+        <!-- UI Result: Case no longer searchable or viewable. -->
+
+        <CaseCourt xmlns:nc="http://niem.gov/niem/niem-core/2.0">
+          <nc:OrganizationIdentification>
+            <nc:IdentificationID>generic-court</nc:IdentificationID>
+          </nc:OrganizationIdentification>
+        </CaseCourt>
+
+        <CaseTrackingID xmlns="http://niem.gov/niem/niem-core/2.0">CASE-000007</CaseTrackingID>
+        <NotificationReason>Integration Test</NotificationReason>
+
+        <Event>
+          <ID>EVT-007</ID>
+          <EventType>CaseExpunge</EventType>
+        </Event>
+
+      </NotifyCaseEventMessage>
+    </NotifyCaseEventRequest>
+  </NotifyCaseEvent>
+</soapenv:Body>

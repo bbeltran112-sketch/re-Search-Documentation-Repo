@@ -1,0 +1,48 @@
+<!--
+  GetCase Request (Annotated)
+
+  Legend:
+    [REQUIRED]  – must be present and valid
+    [OPTIONAL]  – recommended when available
+    [NEW]       – recently added/now supported (if your CMS implements it)
+
+  Notes:
+    * All timestamps ISO 8601 UTC.
+    * CourtIdentification must match a value mapped in re:Search (e.g., "Hopkins:cc").
+-->
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:ecf="urn:oasis:names:tc:legalxml-courtfiling:wsdl:WebServiceMessagingProfile-Definitions-4.0"
+                  xmlns:tyler="urn:tyler:ecf:extensions:GetCaseMessage"
+                  xmlns:nc="http://niem.gov/niem/niem-core/2.0">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <ecf:GetCaseRequest>
+      <tyler:GetCaseRequestMessage>
+
+        <!-- [REQUIRED] unique per request -->
+        <tyler:MessageID>0f1c68b3-8a55-4f7c-a41a-123456789abc</tyler:MessageID>
+
+        <!-- [REQUIRED] UTC -->
+        <tyler:RequestDateTime>2025-11-11T10:30:00Z</tyler:RequestDateTime>
+
+        <!-- [REQUIRED] mapped court/jurisdiction -->
+        <tyler:CourtIdentification>
+          <nc:IdentificationID>Hopkins:cc</nc:IdentificationID>
+        </tyler:CourtIdentification>
+
+        <!-- [REQUIRED] authoritative CMS case id -->
+        <tyler:CaseTrackingID>CASE-12345678</tyler:CaseTrackingID>
+
+        <!-- [OPTIONAL][RECOMMENDED] include doc metadata for Document correlation -->
+        <tyler:IncludeDocumentMetadata>true</tyler:IncludeDocumentMetadata>
+
+        <!-- [OPTIONAL][RECOMMENDED] include parties/attorneys -->
+        <tyler:IncludePartyInformation>true</tyler:IncludePartyInformation>
+
+        <!-- [NEW][OPTIONAL] return only changes since timestamp (if supported by your CMS) -->
+        <!-- <tyler:SinceDateTime>2025-10-01T00:00:00Z</tyler:SinceDateTime> -->
+
+      </tyler:GetCaseRequestMessage>
+    </ecf:GetCaseRequest>
+  </soapenv:Body>
+</soapenv:Envelope>

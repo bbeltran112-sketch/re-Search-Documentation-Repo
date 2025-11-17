@@ -1,0 +1,20 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:ecf="urn:oasis:names:tc:legalxml-courtfiling:wsdl:WebServiceMessagingProfile-Definitions-4.0"
+                  xmlns:tyler="urn:tyler:ecf:extensions:GetCaseMessage"
+                  xmlns:nc="http://niem.gov/niem/niem-core/2.0">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <ecf:GetCaseRequest>
+      <tyler:GetCaseRequestMessage>
+        <tyler:MessageID>c6f1c8be-0f09-4a76-9a4a-2f1c77e4a0de</tyler:MessageID>
+        <tyler:RequestDateTime>2025-11-11T12:05:00Z</tyler:RequestDateTime>
+        <tyler:CourtIdentification>
+          <nc:IdentificationID>Hopkins:cc</nc:IdentificationID>
+        </tyler:CourtIdentification>
+        <tyler:CaseTrackingID>CASE-00000002</tyler:CaseTrackingID>
+        <tyler:IncludeDocumentMetadata>true</tyler:IncludeDocumentMetadata>
+        <tyler:IncludePartyInformation>true</tyler:IncludePartyInformation>
+      </tyler:GetCaseRequestMessage>
+    </ecf:GetCaseRequest>
+  </soapenv:Body>
+</soapenv:Envelope>

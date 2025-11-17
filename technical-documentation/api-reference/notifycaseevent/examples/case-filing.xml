@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Body xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <NotifyCaseEvent xmlns="urn:oasis:names:tc:legalxml-courtfiling:wsdl:WebServiceMessagingProfile-Definitions-4.0">
+    <NotifyCaseEventRequest>
+      <NotifyCaseEventMessage xmlns="urn:tyler:ecf:extensions:CaseNotifyMessage">
+
+        <!-- Use CaseFiling when a new filing or amendment has been added in the CMS. -->
+        <!-- re:Search Action: Runs GetCase to refresh filing information. -->
+        <!-- UI Result: Case data is indexed by re:Search and shown on the UI. -->
+
+        <CaseCourt xmlns:nc="http://niem.gov/niem/niem-core/2.0">
+          <nc:OrganizationIdentification>
+            <nc:IdentificationID>generic-court</nc:IdentificationID>
+          </nc:OrganizationIdentification>
+        </CaseCourt>
+
+        <CaseTrackingID xmlns="http://niem.gov/niem/niem-core/2.0">CASE-000001</CaseTrackingID>
+        <NotificationReason>Integration Test</NotificationReason>
+
+        <Event>
+          <ID>EVT-001</ID>
+          <EventType>CaseFiling</EventType>
+        </Event>
+
+      </NotifyCaseEventMessage>
+    </NotifyCaseEventRequest>
+  </NotifyCaseEvent>
+</soapenv:Body>

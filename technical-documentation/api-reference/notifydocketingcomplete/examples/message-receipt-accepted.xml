@@ -1,0 +1,12 @@
+<MessageReceiptMessage
+    xmlns="urn:oasis:names:tc:legalxml-courtfiling:schema:xsd:MessageReceiptMessage-4.0"
+    xmlns:nc="http://niem.gov/niem/niem-core/2.0"
+    xmlns:ecf="urn:oasis:names:tc:legalxml-courtfiling:schema:xsd:CommonTypes-4.0">
+    <ecf:SendingMDELocationID>
+        <nc:IdentificationID>https://courtrecordmde.com</nc:IdentificationID>
+    </ecf:SendingMDELocationID>
+    <ecf:Error>
+        <ecf:ErrorCode>0</ecf:ErrorCode>
+        <ecf:ErrorText>Accepted</ecf:ErrorText>
+    </ecf:Error>
+</MessageReceiptMessage>

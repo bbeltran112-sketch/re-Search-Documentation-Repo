@@ -1,0 +1,150 @@
+<!--
+  NotifyDocketingComplete (Annotated)
+  Purpose: CMS → EFM asynchronous callback after docketing completes.
+  Models:
+    * Per-Filing: one DocumentIdentification (single filing)
+    * Per-Envelope: multiple DocumentIdentification (one per filing)
+-->
+<RecordDocketingCallbackMessage
+    xmlns="urn:oasis:names:tc:legalxml-courtfiling:schema:xsd:RecordDocketingCallbackMessage-4.0"
+    xmlns:j="http://niem.gov/niem/domains/jxdm/4.0"
+    xmlns:nc="http://niem.gov/niem/niem-core/2.0"
+    xmlns:ecf="urn:oasis:names:tc:legalxml-courtfiling:schema:xsd:CommonTypes-4.0"
+    xmlns:s="http://niem.gov/niem/structures/2.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <!-- EFM filing ID(s) echoed from RecordFiling -->
+    <nc:DocumentIdentification s:id="FilingID1">
+        <nc:IdentificationID>001-f786e6d6-558c-448f-b249-067002d716a0</nc:IdentificationID>
+    </nc:DocumentIdentification>
+
+    <!-- Sender identity -->
+    <ecf:SendingMDELocationID>
+        <nc:IdentificationID>https://courtrecordmde.com</nc:IdentificationID>
+    </ecf:SendingMDELocationID>
+    <ecf:SendingMDEProfileCode>
+        urn:oasis:names:tc:legalxml-courtfiling:schema:xsd:WebServicesMessaging-2.0
+    </ecf:SendingMDEProfileCode>
+
+    <!-- Case header updates -->
+    <civil:CivilCase xmlns:civil="urn:oasis:names:tc:legalxml-courtfiling:schema:xsd:CivilCase-4.0">
+        <nc:CaseTitleText>Troy Star vs Jane Smith</nc:CaseTitleText>
+        <nc:CaseCategoryText>CV</nc:CaseCategoryText>
+        <nc:CaseTrackingID>22222222</nc:CaseTrackingID>
+        <nc:CaseDocketID>CV-2013-10000</nc:CaseDocketID>
+
+        <j:CaseAugmentation>
+            <j:CaseCourt>
+                <nc:OrganizationIdentification>
+                    <nc:IdentificationID>harris:dc</nc:IdentificationID>
+                </nc:OrganizationIdentification>
+            </j:CaseCourt>
+            <j:CaseJudge>
+                <j:JudicialOfficialBarMembership>
+                    <j:JudicialOfficialBarIdentification>
+                        <nc:IdentificationID>111</nc:IdentificationID>
+                        <nc:IdentificationCategoryText>JUDGEID</nc:IdentificationCategoryText>
+                    </j:JudicialOfficialBarIdentification>
+                </j:JudicialOfficialBarMembership>
+            </j:CaseJudge>
+            <j:CaseLineageCase>
+                <nc:CaseTrackingID>B4EE599A-C9F8-4E77-9937-65AE754A3494</nc:CaseTrackingID>
+            </j:CaseLineageCase>
+        </j:CaseAugmentation>
+
+        <!-- Participant CMSID mapping (ATTORNEYID/CASEPARTYATTORNEYID + CMSID) -->
+        <tyler:CaseAugmentation xmlns:tyler="urn:tyler:ecf:extensions:Common">
+            <ecf:CaseOtherEntityAttorney>
+                <nc:RoleOfPersonReference s:ref="Attorney1"/>
+                <j:CaseOfficialRoleText>LEAD</j:CaseOfficialRoleText>
+                <ecf:CaseRepresentedPartyReference s:ref="Party1"/>
+            </ecf:CaseOtherEntityAttorney>
+
+            <ecf:CaseParticipant>
+                <ecf:EntityPerson s:id="Attorney1">
+                    <nc:PersonOtherIdentification>
+                        <nc:IdentificationID>037BAEC1-F6E8-43ED-A102-B8C5E76748EB</nc:IdentificationID>
+                        <nc:IdentificationCategoryText>ATTORNEYID</nc:IdentificationCategoryText>
+                    </nc:PersonOtherIdentification>
+                    <nc:PersonOtherIdentification>
+                        <nc:IdentificationID>22222</nc:IdentificationID>
+                        <nc:IdentificationCategoryText>CMSID</nc:IdentificationCategoryText>
+                    </nc:PersonOtherIdentification>
+                </ecf:EntityPerson>
+                <ecf:CaseParticipantRoleCode>ATTY</ecf:CaseParticipantRoleCode>
+            </ecf:CaseParticipant>
+
+            <ecf:CaseParticipant>
+                <ecf:EntityPerson s:id="Party1">
+                    <nc:PersonOtherIdentification>
+                        <nc:IdentificationID>037BAEC1-F6E8-43ED-A102-B8C5E76748EB</nc:IdentificationID>
+                        <nc:IdentificationCategoryText>PARTYID</nc:IdentificationCategoryText>
+                    </nc:PersonOtherIdentification>
+                    <nc:PersonOtherIdentification>
+                        <nc:IdentificationID>333333</nc:IdentificationID>
+                        <nc:IdentificationCategoryText>CMSID</nc:IdentificationCategoryText>
+                    </nc:PersonOtherIdentification>
+                </ecf:EntityPerson>
+                <ecf:CaseParticipantRoleCode>P</ecf:CaseParticipantRoleCode>
+            </ecf:CaseParticipant>
+
+            <!-- Example org participant -->
+            <ecf:CaseParticipant>
+                <ecf:EntityOrganization s:id="Party3">
+                    <tyler:OrganizationOtherIdentification>
+                        <tyler:Identification>
+                            <nc:IdentificationID>2f9be3aa-d424-4a64-bff2-af5d32236bca</nc:IdentificationID>
+                            <nc:IdentificationCategoryText>PARTYID</nc:IdentificationCategoryText>
+                        </tyler:Identification>
+                        <tyler:Identification>
+                            <nc:IdentificationID>223</nc:IdentificationID>
+                            <nc:IdentificationCategoryText>CMSID</nc:IdentificationCategoryText>
+                        </tyler:Identification>
+                    </tyler:OrganizationOtherIdentification>
+                </ecf:EntityOrganization>
+                <ecf:CaseParticipantRoleCode>D</ecf:CaseParticipantRoleCode>
+            </ecf:CaseParticipant>
+
+            <tyler:CaseTypeText>KDM</tyler:CaseTypeText>
+        </tyler:CaseAugmentation>
+
+        <!-- Optional civil augmentation -->
+        <ecf:CauseOfActionCode/>
+        <civil:ClassActionIndicator>false</civil:ClassActionIndicator>
+        <civil:JuryDemandIndicator>false</civil:JuryDemandIndicator>
+        <civil:ReliefTypeCode/>
+    </civil:CivilCase>
+
+    <!-- Overall filing status -->
+    <ecf:FilingStatus>
+        <nc:StatusDescriptionText>Accepted without modification.</nc:StatusDescriptionText>
+        <ecf:FilingStatusCode>accepted</ecf:FilingStatusCode>
+    </ecf:FilingStatus>
+
+    <!-- Reviewed docs: return CMSIDs for filings + documents -->
+    <tyler:ReviewedLeadDocument xmlns:tyler="urn:tyler:ecf:extensions:Common">
+        <ecf:DocumentMetadata>
+            <j:RegisterActionDescriptionText/>
+            <ecf:FilingAttorneyID/>
+            <ecf:FilingPartyID/>
+        </ecf:DocumentMetadata>
+        <ecf:DocumentRendition>
+            <ecf:DocumentRenditionMetadata>
+                <ecf:DocumentAttachment s:id="Attachment1"/>
+            </ecf:DocumentRenditionMetadata>
+        </ecf:DocumentRendition>
+
+        <!-- Maps doc attachment to CMSID -->
+        <tyler:DocumentAttachmentIdentification>
+            <tyler:DocumentAttachmentReference s:ref="Attachment1"/>
+            <tyler:DocumentID>AFB14CC5-3DC8-48A4-9448-00F26D7CE2C2</tyler:DocumentID>
+            <tyler:CMSID>1121212</tyler:CMSID>
+        </tyler:DocumentAttachmentIdentification>
+
+        <!-- Maps filing to CMSID -->
+        <tyler:FilingIdentification>
+            <tyler:FilingIdentificationReference s:ref="FilingID1"/>
+            <tyler:CMSID>34333</tyler:CMSID>
+        </tyler:FilingIdentification>
+    </tyler:ReviewedLeadDocument>
+</RecordDocketingCallbackMessage>

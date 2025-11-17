@@ -1,0 +1,26 @@
+<!--
+  MessageReceipt (Annotated)
+  Synchronous response to RecordFiling indicating acceptance/rejection/pending.
+-->
+<MessageReceiptMessage
+    xmlns="urn:oasis:names:tc:legalxml-courtfiling:schema:xsd:MessageReceiptMessage-4.0"
+    xmlns:nc="http://niem.gov/niem/niem-core/2.0"
+    xmlns:ecf="urn:oasis:names:tc:legalxml-courtfiling:schema:xsd:CommonTypes-4.0">
+
+    <!-- [REQUIRED] Correlation identifiers (examples; market-specific) -->
+    <ecf:SendingMDELocationID>
+        <nc:IdentificationID>https://filingreviewmde.com</nc:IdentificationID>
+    </ecf:SendingMDELocationID>
+
+    <!-- [REQUIRED] Result status -->
+    <ecf:Error>
+        <ecf:ErrorCode>0</ecf:ErrorCode>
+        <ecf:ErrorText>Accepted</ecf:ErrorText>
+    </ecf:Error>
+
+    <!-- [OPTIONAL] CMS-side IDs surfaced at receipt time -->
+    <!-- <ecf:MessageIdentification>...</ecf:MessageIdentification> -->
+
+    <!-- [OPTIONAL] Human-readable validation/details -->
+    <!-- <ecf:MessageStatusDetailsText>Pending clerk docketing</ecf:MessageStatusDetailsText> -->
+</MessageReceiptMessage>

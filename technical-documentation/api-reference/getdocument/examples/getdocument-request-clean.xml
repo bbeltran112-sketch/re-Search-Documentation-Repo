@@ -1,0 +1,24 @@
+<DocumentQueryMessage
+    xsi:schemaLocation="urn:oasis:names:tc:legalxml-courtfiling:schema:xsd:DocumentQueryMessage-4.0 ECF-4.0-DocumentQueryMessage.xsd"
+    xmlns="urn:oasis:names:tc:legalxml-courtfiling:schema:xsd:DocumentQueryMessage-4.0"
+    xmlns:j="http://niem.gov/niem/domains/jxdm/4.0"
+    xmlns:nc="http://niem.gov/niem/niem-core/2.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecf="urn:oasis:names:tc:legalxml-courtfiling:schema:xsd:CommonTypes-4.0">
+    <ecf:SendingMDELocationID>
+        <nc:IdentificationID>https://courtrecordmde.com</nc:IdentificationID>
+    </ecf:SendingMDELocationID>
+    <ecf:SendingMDEProfileCode>
+        urn:oasis:names:tc:legalxml-courtfiling:schema:xsd:WebServicesMessaging-2.0
+    </ecf:SendingMDEProfileCode>
+    <ecf:QuerySubmitter>
+        <ecf:EntityPerson/>
+    </ecf:QuerySubmitter>
+    <j:CaseCourt>
+        <nc:OrganizationIdentification>
+            <nc:IdentificationID>harris:dcccv</nc:IdentificationID>
+        </nc:OrganizationIdentification>
+    </j:CaseCourt>
+    <nc:CaseTrackingID>054Rti3-3252-4510-acdc-1205ca5aa5a2</nc:CaseTrackingID>
+    <nc:CaseDocketID>9Ghif57gh-1617-4bc7-83e0-6971c8cb2712</nc:CaseDocketID>
+</DocumentQueryMessage>

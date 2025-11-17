@@ -1,0 +1,105 @@
+<!--
+  GetCase Response (Annotated)
+  Legend:
+    [REQUIRED]  – must be present and valid for re:Search indexing
+    [EXPECTED]  – typically present from eFiling/ECF; strongly recommended
+    [NEW]       – newly expected by re:Search for better indexing/UX
+
+  Notes:
+    * All timestamps ISO 8601 UTC.
+    * Do NOT embed binaries; return metadata/handles only.
+    * If case not found, return a SOAP Fault (do not return an empty <ecf:Case>).
+-->
+<GetCaseResponse xmlns="urn:oasis:names:tc:legalxml-courtfiling:schema:CaseQueryResponseMessage:4.0"
+                 xmlns:ecf="urn:oasis:names:tc:legalxml-courtfiling:schema:xsd:CommonTypes-4.0"
+                 xmlns:nc="http://niem.gov/niem/niem-core/2.0"
+                 xmlns:j="http://niem.gov/niem/domains/jxdm/4.0"
+                 xmlns:tyler="urn:tyler:ecf:extensions:Common"
+                 xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"
+                 xmlns:structures="http://niem.gov/niem/structures/2.0">
+
+  <ecf:Case>
+    <!-- [EXPECTED] from eFiling integrations -->
+    <ecf:CaseTrackingID>C2540032</ecf:CaseTrackingID>
+    <ecf:CaseTitleText>Smith vs. Jones</ecf:CaseTitleText>
+    <ecf:CaseCategoryText>Civil</ecf:CaseCategoryText>
+    <ecf:CaseTypeText>Contract</ecf:CaseTypeText>
+
+    <!-- [NEW] recommended/expected for richer indexing and filtering -->
+    <ecf:CaseSubTypeText>Debt Collection</ecf:CaseSubTypeText>
+
+    <!-- [REQUIRED] exact enumeration for re:Search visibility rules -->
+    <tyler:CaseSecurity>PublicFilingPublicView</tyler:CaseSecurity>
+  </ecf:Case>
+
+  <tyler:CaseEvent>
+    <tyler:FilingEvent>
+      <ecf:DocumentMetadata>
+        <!-- [EXPECTED] standard filing metadata -->
+        <j:RegisterActionDescriptionText>Complaint Filed</j:RegisterActionDescriptionText>
+        <ecf:FilingAttorneyID>12345</ecf:FilingAttorneyID>
+        <ecf:FilingPartyID>56789</ecf:FilingPartyID>
+
+        <!-- [NEW] required for correct timeline/indexing -->
+        <ecf:ActivityDate>
+          <nc:DateTime>2024-12-01T09:30:00Z</nc:DateTime>
+        </ecf:ActivityDate>
+
+        <!-- [NEW] standardized status block; improves UI messaging -->
+        <ecf:ActivityStatus>
+          <ecf:StatusText>Filed</ecf:StatusText>
+          <ecf:StatusDescriptionText>Initial complaint successfully filed</ecf:StatusDescriptionText>
+        </ecf:ActivityStatus>
+      </ecf:DocumentMetadata>
+
+      <ecf:DocumentRendition>
+        <!-- [EXPECTED] basic document description -->
+        <nc:DocumentDescriptionText>Complaint Document</nc:DocumentDescriptionText>
+
+        <nc:DocumentIdentification>
+          <nc:IdentificationID>DOC123456789</nc:IdentificationID>
+          <nc:IdentificationCategoryText>CMSID</nc:IdentificationCategoryText>
+        </nc:DocumentIdentification>
+
+        <nc:DocumentPostDate>
+          <nc:DateTime>2024-12-01T09:31:00Z</nc:DateTime>
+        </nc:DocumentPostDate>
+
+        <ecf:DocumentRenditionMetadata>
+          <!-- Use an internal cross-reference so downstream elements can map back -->
+          <ecf:DocumentAttachment structures:id="Attachment1">
+            <!-- [EXPECTED] metadata only; no binary content -->
+            <nc:BinaryDescriptionText>Initial complaint filing</nc:BinaryDescriptionText>
+            <nc:BinaryFormatStandardName>PDF</nc:BinaryFormatStandardName>
+            <nc:BinaryLocationURI>https://cms.example.gov/docs/complaint.pdf</nc:BinaryLocationURI>
+
+            <!-- [NEW] improves UI document details and integrity checks -->
+            <tyler:PageCount>12</tyler:PageCount>
+
+            <!-- [EXPECTED] size/category for basic validation and display -->
+            <nc:BinarySizeValue>102400</nc:BinarySizeValue>
+            <nc:BinaryCategoryText>LEAD</nc:BinaryCategoryText>
+          </ecf:DocumentAttachment>
+        </ecf:DocumentRenditionMetadata>
+      </ecf:DocumentRendition>
+    </tyler:FilingEvent>
+
+    <tyler:DocumentAttachmentIdentification>
+      <!-- Cross-reference the attachment above -->
+      <tyler:DocumentAttachmentReference s:ref="Attachment1"/>
+      <tyler:CMSID>DOC123456789</tyler:CMSID>
+
+      <!-- [REQUIRED] document-level visibility mapping -->
+      <tyler:DocumentSecurity>PublicView</tyler:DocumentSecurity>
+    </tyler:DocumentAttachmentIdentification>
+  </tyler:CaseEvent>
+
+  <!-- [OPTIONAL] but required for civil indexing if extraction is configured -->
+  <tyler:CivilCaseMetadata>
+    <tyler:AmountInControversy>15000.00</tyler:AmountInControversy>
+    <tyler:ClassActionIndicator>false</tyler:ClassActionIndicator>
+    <tyler:JuryDemandIndicator>true</tyler:JuryDemandIndicator>
+    <tyler:ReliefTypeCode>MONETARY</tyler:ReliefTypeCode>
+  </tyler:CivilCaseMetadata>
+
+</GetCaseResponse>

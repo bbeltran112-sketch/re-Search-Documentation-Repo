@@ -1,0 +1,50 @@
+<!-- SOAP Body: Contains the actual web service message payload -->
+<soapenv:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+   <!-- Web Service Operation: The main service method being called for case event notifications -->
+   <NotifyCaseEvent xmlns="urn:oasis:names:tc:legalxml-courtfiling:wsdl:WebServiceMessagingProfile-Definitions-4.0">
+      <!-- Request Wrapper: Contains the actual notification request parameters -->
+      <NotifyCaseEventRequest>
+         <!-- Notification Message: The core message containing case event details -->
+         <NotifyCaseEventMessage xmlns="urn:tyler:ecf:extensions:CaseNotifyMessage">
+            <!-- Court Information: Identifies which court/jurisdiction this case belongs to -->
+            <CaseCourt xmlns="http://niem.gov/niem/domains/jxdm/4.0">
+               <!-- Court Identification: Unique identifier for the court system -->
+               <OrganizationIdentification xmlns="http://niem.gov/niem/niem-core/2.0">
+                  <!-- Court ID: "lake" identifies the specific court (Lake County court system) -->
+                  <IdentificationID>lake</IdentificationID>
+                  <!-- ID Category: Not used in this message (null) -->
+                  <IdentificationCategoryText xsi:nil="true"/>
+                  <!-- ID Source: Not used in this message (null) -->
+                  <IdentificationSourceText xsi:nil="true"/>
+               </OrganizationIdentification>
+               <!-- Optional Court Details: All set to null/not used in this notification -->
+               <!-- Physical location of the court -->
+               <OrganizationLocation xsi:nil="true" xmlns="http://niem.gov/niem/niem-core/2.0"/>
+               <!-- Full name of the court organization -->
+               <OrganizationName xsi:nil="true" xmlns="http://niem.gov/niem/niem-core/2.0"/>
+               <!-- Primary contact information for the court -->
+               <OrganizationPrimaryContactInformation xsi:nil="true" xmlns="http://niem.gov/niem/niem-core/2.0"/>
+               <!-- Sub-unit within the court (e.g., specific division) -->
+               <OrganizationSubUnitName xsi:nil="true" xmlns="http://niem.gov/niem/niem-core/2.0"/>
+               <!-- Tax identification number for the court -->
+               <OrganizationTaxIdentification xsi:nil="true" xmlns="http://niem.gov/niem/niem-core/2.0"/>
+               <!-- Organizational unit name within the court -->
+               <OrganizationUnitName xsi:nil="true" xmlns="http://niem.gov/niem/niem-core/2.0"/>
+               <!-- Display name of the court -->
+               <CourtName xsi:nil="true"/>
+            </CaseCourt>
+            <!-- Case Identifier: Unique tracking number for this specific case -->
+            <CaseTrackingID xmlns="http://niem.gov/niem/niem-core/2.0">6172150</CaseTrackingID>
+            <!-- Notification Purpose: Describes why this notification is being sent -->
+            <NotificationReason>TEST</NotificationReason>
+            <!-- Event Details: Information about the specific event that triggered this notification -->
+            <Event>
+               <!-- Event Unique ID: Internal identifier for this specific event -->
+               <ID>1234567</ID>
+               <!-- Event Classification: Type of event-->
+               <EventType>CaseFiling</EventType>
+            </Event>    
+         </NotifyCaseEventMessage>
+      </NotifyCaseEventRequest>
+   </NotifyCaseEvent>
+</soapenv:Body>

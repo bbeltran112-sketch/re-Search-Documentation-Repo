@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Body xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <NotifyCaseEvent xmlns="urn:oasis:names:tc:legalxml-courtfiling:wsdl:WebServiceMessagingProfile-Definitions-4.0">
+    <NotifyCaseEventRequest>
+      <NotifyCaseEventMessage xmlns="urn:tyler:ecf:extensions:CaseNotifyMessage">
+
+        <!-- Use CaseSecurity when case visibility/security changes (e.g., Sealed → Public). -->
+        <!-- re:Search Action: Runs GetCase to refresh case security classification. -->
+        <!-- UI Result: Case hidden or displayed depending on new security flag. -->
+
+        <CaseCourt xmlns:nc="http://niem.gov/niem/niem-core/2.0">
+          <nc:OrganizationIdentification>
+            <nc:IdentificationID>generic-court</nc:IdentificationID>
+          </nc:OrganizationIdentification>
+        </CaseCourt>
+
+        <CaseTrackingID xmlns="http://niem.gov/niem/niem-core/2.0">CASE-000008</CaseTrackingID>
+        <NotificationReason>Integration Test</NotificationReason>
+
+        <Event>
+          <ID>EVT-008</ID>
+          <EventType>CaseSecurity</EventType>
+        </Event>
+
+      </NotifyCaseEventMessage>
+    </NotifyCaseEventRequest>
+  </NotifyCaseEvent>
+</soapenv:Body>
