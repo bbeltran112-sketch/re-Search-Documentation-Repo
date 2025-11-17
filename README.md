@@ -44,7 +44,7 @@ Start with:
 - [Integration Modes Overview](./client-documentation/integration-modes/README.md)
 - [API Reference](./technical-documentation/api-reference/README.md)
 - [Support Playbook](./technical-documentation/support-playbook/README.md)
-- [XML Library](./technical-documentation/xml-library/xml-library.md)
+- [XML Library](./technical-documentation/xml-library/README.md)
 
 ---
 
