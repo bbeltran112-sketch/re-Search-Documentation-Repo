@@ -1,115 +1,124 @@
-# API Reference
+# Technical Documentation
 
 **Navigation:**  
-[Home](../../README.md) › [Technical Documentation](../README.md) › API Reference
+[Home](../README.md) › Technical Documentation
 
-The API Reference defines the core web services used by re:SearchTX.  
-All APIs follow OASIS ECF standards, use SOAP 1.2 over HTTPS, and rely on mutual TLS authentication.
+The Technical Documentation provides all system-level, API, behavioral, and troubleshooting resources used to support integrations with the **re:Search** platform.  
+It is intended for:
 
+- CMS vendors and integrators  
+- Court IT administrators  
+- EFSPs participating in ECF pipelines  
+- Tyler BIS support analysts, developers, and TPMs  
+
+Documentation is structured to guide you through API behavior, system rules, visibility logic, architecture, and diagnostic workflows.
+
+---
+
+# 📘 API Reference
+
+The API Reference documents all **SOAP and file-based** APIs used by re:Search.  
 Each API page includes:
 
-- Purpose and behavior summary  
-- Message structure and schema notes  
-- XML example placeholder  
-- Links to canonical XML samples  
-- Related API pages  
-- Related troubleshooting and security documentation  
-
-This index serves as the entry point into all re:SearchTX integration APIs.
-
----
-
-## Purpose of the re:Search API Set
-
-These APIs enable:
-
-- CMS → re:Search case synchronization  
-- EFM → CMS filing and docketing workflow  
-- Document retrieval and visibility enforcement  
-- Event-driven updates (EventType logic)  
-- Indexing, UI updates, and JCIT visibility compliance  
-
-All APIs work in coordination.  
-Example:  
-NotifyCaseEvent → GetCase → update re:Search index.
-
----
-
-## Transport and Protocol
-
-| Property | Value |
-|---------|--------|
-| Protocol | SOAP 1.2 over HTTPS |
-| Security | mTLS |
-| Standard | OASIS ECF |
-| Format | XML |
-| Authentication | Required; configured per environment |
-
-Authentication requirements:  
-[Common Headers & Auth](./common-headers-and-auth.md)
-
----
-
-## Core APIs
+- Purpose & behavior  
+- Required elements  
+- EventType and security considerations  
+- Inline XML placeholders  
+- Link to the full **XML Library**
 
 | API | Description |
 |-----|-------------|
-| [NotifyCaseEvent](./notifycaseevent/README.md) | CMS → re:Search event notifications |
-| [GetCase](./getcase/README.md) | Authoritative case metadata retrieval |
-| [GetDocument](./getdocument/README.md) | Document binary retrieval |
-| [RecordFiling](./recordfiling/README.md) | EFM → CMS filing submission |
-| [NotifyDocketingComplete](./notifydocketingcomplete/README.md) | Filing docket confirmation |
+| **[API Reference Index](/technical-documentation/api-reference/README.md)** | Entry point for all APIs |
+| **[Common Headers & Auth](/technical-documentation/api-reference/common-headers-and-auth.md)** | SOAP headers, authentication, mTLS |
+| **[Error Codes](/technical-documentation/api-reference/error-codes.md)** | Error behaviors and response patterns |
+| **[RecordFiling](/technical-documentation/api-reference/recordfiling/README.md)** | EFM → CMS filing submission |
+| **[NotifyDocketingComplete](/technical-documentation/api-reference/notifydocketingcomplete/README.md)** | CMS docket completion |
+| **[NotifyCaseEvent](/technical-documentation/api-reference/notifycaseevent/README.md)** | CMS-originated case/document/party/security updates |
+| **[GetCase](/technical-documentation/api-reference/getcase/README.md)** | Authoritative case metadata provider |
+| **[GetDocument](/technical-documentation/api-reference/getdocument/README.md)** | Document binary retrieval |
 
-These APIs are tightly linked.  
-For example:  
-RecordFiling → NotifyDocketingComplete → re:Search calls GetCase.
 
 ---
 
-## Shared Artifacts
+# 🛠 Support Playbook
+
+The Support Playbook provides detailed guidance for diagnosing and resolving indexing issues, visibility mismatches, and integration errors.  
+It is the primary resource used by BIS Support.
 
 | Section | Description |
-|--------|-------------|
-| [Common Headers & Auth](./common-headers-and-auth.md) | SOAP transport requirements |
-| [Error Codes](./error-codes.md) | Error schema and handling |
+|---------|-------------|
+| **[Playbook Index](/technical-documentation/support-playbook/README.md)** | Overview of support documentation |
+| **[JCIT Roles](/technical-documentation/support-playbook/jcIT-roles.md)** | Visibility & responsibility definitions |
+| **[Security Logic](/technical-documentation/support-playbook/security_logic.md)** | CaseSecurity & DocumentSecurity rules |
+| **[Registered User Matrix](/technical-documentation/support-playbook/registered-user-matrix.md)** | Case visibility by user role |
+| **[Delays & Special Rules](/technical-documentation/support-playbook/delays-and-special-rules.md)** | Criminal, 31-day, 180-day rules |
+| **[EventType Logic](/technical-documentation/support-playbook/eventtype-logic.md)** | Processing rules |
+| **[Integration Architecture](/technical-documentation/support-playbook/integration-architecture.md)** | System-level flow |
+| **[Troubleshooting Guide](/technical-documentation/support-playbook/troubleshooting.md)** | Diagnostic workflow |
+| **[Common CMS Mistakes](/technical-documentation/support-playbook/common-cms-mistakes.md)** | Frequent vendor errors |
+| **[System Behavior Examples](/technical-documentation/support-playbook/system-behavior-examples.md)** | XML → UI mapping |
+| **[Escalation Guidelines](/technical-documentation/support-playbook/escalation-guidelines.md)** | Internal escalation process |
+| **[XML Examples (Deprecated)](/technical-documentation/support-playbook/xml-examples.md)** | Deprecated samples |
+| **[References](/technical-documentation/support-playbook/references.md)** | Source standards |
+
 
 ---
 
-## Behavior Expectations
+# 📦 XML Library
 
-All APIs follow these core behavior rules:
+The XML Library provides a **centralized set of canonical XML examples** used in integrations.  
+These include:
 
-- re:Search always calls GetCase after receiving an event  
-- Only XML elements relevant to EventType are processed  
-- Security updates must use correct CaseSecurity/DocumentSecurity values  
-- Incorrect or missing sections in XML → visibility issues  
+- NotifyCaseEvent examples  
+- CaseSecurity & DocumentSecurity patterns  
+- GetCaseResponse structures  
+- RecordDocketingCallbackMessage  
+- Correct, incorrect, and vendor error examples
 
-For full behavior logic, see the Support Playbook.
-
----
-
-## Example XML Files
-
-All canonical XML samples are found in the XML Library:
-
-[Full XML Library](../xml-library/xml-library.md)
+**Link:**  
+➡ **[XML Library](/technical-documentation/xml-library/README.md)**
 
 ---
 
-## Related API Pages
+# ❓ FAQs
 
-- [NotifyCaseEvent](./notifycaseevent/README.md)  
-- [GetCase](./getcase/README.md)  
-- [GetDocument](./getdocument/README.md)  
-- [RecordFiling](./recordfiling/README.md)  
-- [NotifyDocketingComplete](./notifydocketingcomplete/README.md)  
+The FAQ answers the most common questions from courts, CMS vendors, and EFSPs, including:
+
+- Why cases are or are not visible  
+- Padlock and confidentiality rules  
+- JCIT visibility constraints  
+- Criminal, family, and restricted case behavior  
+- EventType troubleshooting  
+
+Link:  
+➡ **[Visibility & Access FAQ](/technical-documentation/FAQ/re-search-faq.md)**
 
 ---
 
-## Related Topics
+# 🧩 System Behavior & Architecture
 
-- [EventType Logic](../support-playbook/eventtype-logic.md)  
-- [Security Logic](../support-playbook/security-logic.md)  
-- [Troubleshooting Guide](../support-playbook/troubleshooting.md)  
-- [Integration Architecture](../support-playbook/integration-architecture.md)  
-- [Full XML Library](../xml-library/xml-library.md)
+This category includes deep-dive explanations of how:
+
+- re:Search indexes case and document data  
+- Case and document security interact  
+- UI behavior maps to XML  
+- Delays, restrictions, and JCIT rules are applied  
+- System components interact (CMS, EFM, DAS, re:Search)
+
+These topics appear throughout:
+
+- API Reference  
+- Support Playbook  
+- XML Library  
+- System Behavior Examples  
+
+---
+
+# 🔗 Related Topics
+
+- **[Support Playbook](/technical-documentation/support-playbook/README.md)**  
+- **[API Reference](/technical-documentation/api-reference/README.md)**  
+- **[FAQ](/technical-documentation/FAQ/re-search-faq.md)**  
+- **[XML Library](/technical-documentation/xml-library/README.md)**  
+
+---
