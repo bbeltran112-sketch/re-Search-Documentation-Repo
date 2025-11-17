@@ -15,57 +15,8 @@ This library includes:
 
 All examples follow the structures processed by the Document Access System (DAS) and re:Search's indexing logic.
 
----
-
-# NotifyCaseEvent Examples
-
-## Correct — CaseSecurity Update
-<!-- Placeholder for CaseSecurity XML -->
-
-
-## Incorrect — Wrong EventType for CaseSecurity
-<!-- Placeholder for bad CaseSecurity XML -->
-
-## Correct — DocumentSecurity Update
-<!-- Placeholder for DocumentSecurity XML -->
-
-## Incorrect — Wrong EventType for DocumentSecurity
-<!-- Placeholder for bad DocumentSecurity XML -->
-
-## Combined Case + Document Security Update
-<!-- Placeholder for multi-block XML -->
-
-
----
-
-# GetCaseResponse Examples
-
-## Correct Integrated County Response
-<!-- Placeholder for GetCaseResponse XML -->
-
-## Case Hidden Because of Confidential Document
-<!-- Placeholder for GetCaseResponse (private doc) XML -->
-
-
----
-
-# RecordDocketingCallbackMessage
-<!-- Placeholder for RecordDocketingCallbackMessage XML -->
-
-
----
-
-# Minimal Valid Non-Integrated CaseFiling
-<!-- Placeholder for Minimal CaseFiling XML -->
-
-
----
-
-# Invalid CaseFiling Example
-<!-- Placeholder for Invalid CaseFiling XML -->
-
----
-
+Link:  
+[XML Examples](../xml-library/xml-examples.md)
 ---
 
 # Related Documentation
@@ -83,7 +34,7 @@ A complete guide covering:
 - Troubleshooting flowcharts
 
 Link:  
-[Support Playbook](../support-playbook/index.md)
+[Support Playbook](../support-playbook/README.md)
 
 ---
 
