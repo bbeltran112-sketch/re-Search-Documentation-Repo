@@ -1,51 +1,34 @@
-# 4. Registered User Matrix (JCIT 5.4)
+# Registered User Matrix
 
-The JCIT Registered User Matrix defines visibility for all case categories and types for Role 5 (public users).
+**Navigation:**  
+[Home](../../README.md) › [Technical Documentation](../README.md) › [Support Playbook](./index.md) › Registered User Matrix
 
-This is the core reference for determining which cases are expected to be visible or restricted.
+Visibility for Role 5 (public registered users) varies by case type and county participation.
 
-## 4.1 Case Types Public Users Can View
+---
 
-Public users can view:
-- Most Civil case types
-- Most Probate case types
-- Basic case data for some Family case types
-- A limited set of Criminal documents:
-  - Information
-  - Indictment
-  - Sentence
-  - Judgment
-  - Order of Dismissal
+## Purpose
 
-These document types are visible only if they are not confidential or sealed.
+Define what public users can see under JCIT standards.
 
-## 4.2 Case Types Public Users Cannot View
+---
 
-Public users cannot view:
-- Confidential cases
-- Sealed cases
-- Any case with one or more confidential documents
-- Juvenile, adoption, mental health cases
-- Case categories with statutory restrictions
-- Family cases requiring delay windows
-- Criminal case documents except for the small approved set
+## Matrix
 
-## 4.3 Common Scenarios
+diagram placeholder
 
-Scenario: Case visible to clerk but not to public  
-Cause: DocumentSecurity = PrivateView
+Rules:
 
-Scenario: Case appears as “Protected vs Protected”  
-Cause: Family case with protected style requirement
+- Public users have statewide access across participating counties  
+- Visibility restricted by:  
+  - Case type  
+  - Security levels  
+  - Special JCIT rules (delays, protected classes)  
 
-Scenario: Criminal case shows no documents  
-Cause: Only the approved document types are public
+---
 
-## 4.4 Importance of JCIT-Compliant Case Types
+## Related Topics
 
-If the CMS submits a case type that does not match JCIT standards:
-- Public visibility rules cannot be applied
-- Case may not appear at all for Role 5
-- Cases may appear under incorrect categories
-
-## [Placeholder] Registered User Matrix Graphic
+- [Security Logic](./security-logic.md)
+- [Delays & Special Rules](./delays-and-special-rules.md)
+- [Troubleshooting](./troubleshooting.md)

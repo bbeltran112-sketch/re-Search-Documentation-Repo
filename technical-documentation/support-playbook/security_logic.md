@@ -1,60 +1,42 @@
-# 3. Security Logic
+# Security Logic
 
-Security logic in re:SearchTX is governed by two independent fields:
+**Navigation:**  
+[Home](../../README.md) › [Technical Documentation](../README.md) › [Support Playbook](./index.md) › Security Logic
 
-1. CaseSecurity  
-2. DocumentSecurity  
+Security values drive case/document visibility in re:SearchTX.
 
-Both must be evaluated when diagnosing visibility issues.
+---
 
-## 3.1 Case-Level Security
+## Purpose
 
-CaseSecurity determines:
-- Whether the case is visible to Role 5
-- Whether the case displays a padlock in the UI
-- Whether the case requires Protected Style
+Explain how CaseSecurity and DocumentSecurity control access to content across JCIT roles.
 
-CaseSecurity values include:
-- PublicFilingPublicView
-- PublicFilingRestrictedView
-- Confidential
-- Sealed
+---
 
-A case with CaseSecurity = Confidential or Sealed will not be visible to Role 5.
+## CaseSecurity Behavior
 
-## 3.2 Document-Level Security
+| Value | Behavior |
+|-------|----------|
+| PublicFilingPublicView | Fully visible to Role 5 |
+| PrivateView | Hidden from public; may show padlocks |
+| Sealed | Hidden entirely except to authorized roles |
 
-DocumentSecurity determines:
-- Visibility of individual documents
-- Whether a document displays a padlock icon
-- Whether a document is restricted from public access
+---
 
-Common values include:
-- Public
-- PrivateView
-- Sealed
+## DocumentSecurity Behavior
 
-A single confidential or sealed document will hide the entire case from Role 5.
+document security governs **individual filings**.
 
-## 3.3 Combined Security Logic
+Padlock behavior rules:
 
-Final visibility =  
-CaseSecurity rules  
-+ DocumentSecurity rules  
-+ User Role  
-+ Case Category/Type matrix rules
+- Case-level padlock driven by CaseSecurity  
+- Document-level padlock driven by DocumentSecurity  
+- Document padlocks do *not* affect case padlock visibility  
 
-This means:
+---
 
-- A case can appear internally but not publicly if a document is confidential.
-- A case may show public CaseSecurity but still appear hidden if documentSecurity is private.
-- CaseSecurity and DocumentSecurity must both be correct for public visibility.
+## Related Topics
 
-## 3.4 Security Interaction Patterns
-
-Examples:
-- CaseSecurity = PublicFilingPublicView + DocumentSecurity = PrivateView → Case not visible to public
-- CaseSecurity = Public but eventType wrong → Lock not updating
-- CaseSecurity updated but DocumentSecurity not updated → Mixed visibility
-
-## [Placeholder] Security Flowchart
+- [EventType Logic](./eventtype-logic.md)
+- [Troubleshooting](./troubleshooting.md)
+- [Full XML Library](../xml-library/xml-library.md)

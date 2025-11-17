@@ -1,132 +1,66 @@
-# GetCase – re:Search Integration API
+# GetCase
 
-`GetCase` is the authoritative API that **re:Search** uses to retrieve the full case record from a CMS.  
-Everything shown in the re:Search UI—parties, filings, docket entries, documents, security, events—comes directly from the `GetCaseResponse`.
+**Navigation:**  
+[Home](../../../README.md) › [Technical Documentation](../../README.md) › [API Reference](../README.md) › GetCase
 
-re:Search calls this API after every:
-
-- `NotifyCaseEvent`
-- `RecordFiling` → `NotifyDocketingComplete`
-- Internal reconciliation or refresh job
-- Certain user-driven actions (varies by environment)
-
-Because GetCase drives all indexing and UI behavior, CMS vendors **must** return a complete and accurate case payload on every call.
+GetCase returns authoritative case metadata, including filings, parties, attorneys, docket entries, and security.  
+re:Search evaluates only the XML elements relevant to the EventType that triggered the lookup.
 
 ---
 
 ## Purpose
 
-GetCase provides re:Search with:
+GetCase provides the complete, authoritative CMS dataset so re:Search can:
 
-- Case header metadata  
-- Parties & attorneys  
-- Filing events and docket history  
-- Document metadata (IDs, security, page count, etc.)  
-- Case- and document-level security  
-- Status, disposition, and reassignment  
-- All updates associated with a NotifyCaseEvent  
-
-The `GetCaseResponse` is the **single source of truth** for how the case appears in re:Search.
+- Reindex case details  
+- Render accurate UI information  
+- Evaluate security and visibility  
+- Update filings, parties, documents, and metadata  
 
 ---
 
-## Transport & Protocol
+## Transport and Protocol
 
-| Property     | Value |
-|--------------|--------|
-| Direction    | **re:Search → CMS** |
-| Protocol     | SOAP 1.2 over HTTPS |
-| Security     | Mutual TLS (mTLS) |
-| Schema       | OASIS ECF 4.x CaseQueryResponseMessage |
-| Messages     | `GetCaseRequest` / `GetCaseResponse` |
+| Property | Value |
+|---------|--------|
+| Direction | re:Search → CMS |
+| Protocol | SOAP 1.2 over HTTPS |
+| Security | Mutual TLS |
+| Standard | OASIS ECF |
+| Message Type | GetCaseRequest / GetCaseResponse |
 
-SOAP header rules:  
-➡️ `../../common/common-headers-and-auth.md`
-
----
-
-## When re:Search Calls GetCase
-
-re:Search triggers GetCase when:
-
-1. A `NotifyCaseEvent` arrives  
-2. A filing is docketed (after `NotifyDocketingComplete`)  
-3. A new case is created  
-4. A user action requires updated information  
-5. Internal reconciliation jobs detect incomplete or stale data  
-
-The CMS must **always return the full case**, not partial updates.
+Authentication details:  
+[Common Headers & Auth](../common-headers-and-auth.md)
 
 ---
 
-## Required & Expected Fields
+## When This API Is Used
 
-Below is a concise summary.  
-A complete ruleset is in the Behavior Guide.
+GetCase is called immediately after:
 
----
-
-### Case Header
-
-| Element | Requirement | Purpose |
-|--------|-------------|---------|
-| `ecf:CaseTrackingID` | **REQUIRED** | Primary case identifier |
-| `ecf:CaseTitleText` | EXPECTED | Display in UI |
-| `ecf:CaseCategoryText` | EXPECTED | Civil / Criminal / etc. |
-| `ecf:CaseTypeText` | EXPECTED | Sub-classification |
-| `ecf:CaseSubTypeText` | NEW / EXPECTED | Better filtering/search |
-| `tyler:CaseSecurity` | **REQUIRED** | Case visibility |
+- A NotifyCaseEvent is received  
+- A NotifyDocketingComplete is processed  
+- A system-wide reindex operation is triggered  
 
 ---
 
-### Filing & Event Data
+## Behavior Summary
 
-| Element | Requirement | Purpose |
-|---------|-------------|---------|
-| `ecf:ActivityDate/nc:DateTime` | **REQUIRED** | Filing timeline ordering |
-| `j:RegisterActionDescriptionText` | EXPECTED | Filing description |
-| `ecf:FilingAttorneyID` | EXPECTED | Party/attorney linking |
-| `ecf:FilingPartyID` | EXPECTED | Filing association |
-| `ecf:ActivityStatus` | NEW / EXPECTED | UI messaging |
+re:Search:
 
----
+- Calls GetCase with the CaseTrackingID and CourtIdentifier  
+- Receives the full case dataset  
+- Processes only the XML sections relevant to the originating EventType  
+- Updates search indexes and UI accordingly  
 
-### Document Metadata
+Incorrect or incomplete GetCaseResponse often results in:
 
-| Element | Requirement | Purpose |
-|---------|-------------|---------|
-| `nc:IdentificationID` | **REQUIRED** | CMSID for GetDocument |
-| `nc:DocumentDescriptionText` | EXPECTED | Document label |
-| `nc:DocumentPostDate/nc:DateTime` | EXPECTED | Sorting in UI |
-| `nc:BinaryLocationURI` | EXPECTED | Handle/URL |
-| `tyler:PageCount` | **REQUIRED** | Document indexing + UI |
-| `nc:BinarySizeValue` | EXPECTED | Metadata for UI |
-| `nc:BinaryCategoryText` | EXPECTED | LEAD/ATTACHMENT/EXHIBIT |
+- Visibility mismatches  
+- Missing filings  
+- Incorrect security  
 
 ---
-
-### Document Attachment Identification
-
-| Element | Requirement | Purpose |
-|---------|-------------|---------|
-| `tyler:DocumentAttachmentReference` | REQUIRED | Reference to `structures:id` |
-| `tyler:CMSID` | REQUIRED | Authoritative ID |
-| `tyler:DocumentSecurity` | REQUIRED | Document visibility |
-
----
-
-### Civil-Specific Metadata (Optional but Recommended)
-
-| Element | Notes |
-|---------|-------|
-| `tyler:AmountInControversy` | Used when civil extraction enabled |
-| `tyler:ClassActionIndicator` | — |
-| `tyler:JuryDemandIndicator` | — |
-| `tyler:ReliefTypeCode` | — |
-
----
-
-## High-Level Workflow
+## Processing Workflow
 
 ### NotifyCaseEvent Trigger (ECF mode)
 ```mermaid
@@ -185,61 +119,74 @@ sequenceDiagram
     CMS-->>RS: CaseResponseMessage (case metadata) via EFM
     Note over RS: Create initial case in index
 ```
+---
+
+
+## XML Example
+```xml
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:ecf="urn:oasis:names:tc:legalxml-courtfiling:wsdl:WebServiceMessagingProfile-Definitions-4.0"
+                  xmlns:tyler="urn:tyler:ecf:extensions:GetCaseMessage"
+                  xmlns:nc="http://niem.gov/niem/niem-core/2.0">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <ecf:GetCaseRequest>
+      <tyler:GetCaseRequestMessage>
+
+        <!-- [REQUIRED] unique per request -->
+        <tyler:MessageID>0f1c68b3-8a55-4f7c-a41a-123456789abc</tyler:MessageID>
+
+        <!-- [REQUIRED] UTC -->
+        <tyler:RequestDateTime>2025-11-11T10:30:00Z</tyler:RequestDateTime>
+
+        <!-- [REQUIRED] mapped court/jurisdiction -->
+        <tyler:CourtIdentification>
+          <nc:IdentificationID>Hopkins:cc</nc:IdentificationID>
+        </tyler:CourtIdentification>
+
+        <!-- [REQUIRED] authoritative CMS case id -->
+        <tyler:CaseTrackingID>CASE-12345678</tyler:CaseTrackingID>
+
+        <!-- [OPTIONAL][RECOMMENDED] include doc metadata for Document correlation -->
+        <tyler:IncludeDocumentMetadata>true</tyler:IncludeDocumentMetadata>
+
+        <!-- [OPTIONAL][RECOMMENDED] include parties/attorneys -->
+        <tyler:IncludePartyInformation>true</tyler:IncludePartyInformation>
+
+        <!-- [NEW][OPTIONAL] return only changes since timestamp (if supported by your CMS) -->
+        <!-- <tyler:SinceDateTime>2025-10-01T00:00:00Z</tyler:SinceDateTime> -->
+
+      </tyler:GetCaseRequestMessage>
+    </ecf:GetCaseRequest>
+  </soapenv:Body>
+</soapenv:Envelope>
+```
 
 ---
 
-## Critical Rules (Must Be Followed)
+## Example XML Files
 
-1. **EventType controls which XML blocks re:Search processes.**  
-   Example: If `eventType=CaseParty`, re:Search only reads party blocks.
-
-2. **GetCaseResponse must ALWAYS be complete.**  
-   Partial responses cause data loss in re:Search.
-
-3. **ActivityDate is REQUIRED**  
-   Used to order filings and timeline events.
-
-4. **PageCount is REQUIRED**  
-   Used for document indexing and UI behavior.
-
-5. **Do NOT embed binaries**  
-   Only metadata + URI/handle should be returned.
-
-6. **Exact security enumerations must be used**  
-   - `PublicFilingPublicView`  
-   - `ConfidentialFilingRestrictedView`  
-   - `Sealed`  
-   (Examples only)
-
-More rules:  
-➡️ **[behavior-guide.md](./behavior-guide.md)**
-
----
-
-## Example Files
-
-All example files (filenames only) are in:
-
-
-| Example | File |
-|---------|------|
-| Annotated GetCase Request | [examples/getcase-request-annotated](./examples/getcase-request-annotated) |
-| Parties-Only Request | [examples/getcase-request-partys](./examples/getcase-request-partys) |
-| Parties + Documents Request | [examples/getcase-request-withpartiesanddocuments](./examples/getcase-request-withpartiesanddocuments) |
-| Annotated GetCase Response | [examples/getcase-response-annotated](./examples/getcase-response-annotated) |
+| File | Description |
+|------|-------------|
+| [getcase-request-annotated.xml](./examples/getcase-request-annotated.xml) | Annotated request |
+| [getcase-response-annotated.xml](./examples/getcase-response-annotated.xml) | Annotated response |
+| [getcase-request-withpartiesanddocuments.xml](./examples/getcase-request-withpartiesanddocuments.xml) | Request with full detail |
+| [getcase-request-partys.xml](./examples/getcase-request-partys.xml) | Party-only request |
 
 ---
 
 ## Related API Pages
 
-| API | Link | Purpose |
-|------|------|---------|
-| **RecordFiling** | [../recordfiling/README.md](../recordfiling/README.md) | Submit filings to CMS |
-| **NotifyDocketingComplete** | [../notifydocketingcomplete/README.md](../notifydocketingcomplete/README.md) | Docket acceptance |
-| **NotifyCaseEvent** | [../notifycaseevent/README.md](../notifycaseevent/README.md) | CMS-originated updates |
-| **GetDocument** | [../getdocument/README.md](../getdocument/README.md) | Document retrieval |
+- [RecordFiling](../recordfiling/README.md)  
+- [NotifyDocketingComplete](../notifydocketingcomplete/README.md)  
+- [NotifyCaseEvent](../notifycaseevent/README.md)  
+- [GetDocument](../getdocument/README.md)  
 
 ---
 
-Back to API Reference Index:  
-➡️ [../README.md](../README.md)
+## Related Topics
+
+- [Security Logic](../../support-playbook/security-logic.md)
+- [Registered User Matrix](../../support-playbook/registered-user-matrix.md)
+- [Troubleshooting Guide](../../support-playbook/troubleshooting.md)
+- [Full XML Library](../../xml-library/xml-library.md)

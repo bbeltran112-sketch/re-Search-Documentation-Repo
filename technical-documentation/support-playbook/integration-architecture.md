@@ -1,50 +1,30 @@
-# 7. Integration Architecture
+# Integration Architecture
 
-Understanding how data flows through the CMS, EFM, DAS, and re:SearchTX is essential for identifying issues related to indexing, security, visibility, and document availability.
+**Navigation:**  
+[Home](../../README.md) › [Technical Documentation](../README.md) › [Support Playbook](./index.md) › Integration Architecture
 
-This section outlines the high-level architecture and the functional roles of each system involved.
+This section provides architecture diagrams and flow descriptions for all system integrations.
 
-## 7.1 Data Flow Overview
+---
 
-General flow:
-CMS or EFM
-→ NotifyCaseEvent
-→ Document Access System (DAS)
-→ Search Index
-→ re:SearchTX UI
+## Architecture Diagram
 
-- NotifyCaseEvent triggers processing.
-- GetCaseResponse provides full case metadata.
-- DAS evaluates the EventType and applies the update.
-- The search index is rebuilt or partially updated.
-- The UI displays the change according to JCIT rules.
+diagram placeholder
 
-## 7.2 Integrated Counties
+---
 
-Integrated counties provide:
-- Full case metadata
-- CaseSecurity and DocumentSecurity
-- Party and attorney information
-- Case type/category mapping
+## Workflow Overview
 
-Documents are still routed through the EFM but are associated with CMS metadata.
+- CMS generates updates  
+- Sends NotifyCaseEvent  
+- re:Search calls GetCase  
+- Indexing operations occur  
+- UI updates follow  
 
-## 7.3 Non-Integrated Counties
+---
 
-Non-integrated counties rely on EFM metadata for:
-- Case index
-- Case types/categories (EFM mappings)
-- Security values
-- Document metadata
+## Related Topics
 
-In these counties:
-- Incorrect EFSP filing metadata can affect visibility
-- EFM configuration has significant impact on case categorization
-
-## 7.4 Key Integration Considerations
-
-- Missing or mismatched CaseType values often originate from CMS misconfiguration.
-- EFM-driven counties are more likely to have inconsistent or incomplete metadata.
-- DAS processing depends entirely on receiving correct EventType and valid GetCaseResponse.
-
-## [Placeholder] Architecture Diagram
+- [EventType Logic](./eventtype-logic.md)
+- [Security Logic](./security-logic.md)
+- [Troubleshooting](./troubleshooting.md)

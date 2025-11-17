@@ -1,46 +1,46 @@
-# 2. JCIT Roles
+# JCIT Roles
 
-The JCIT Technology Standards v10.0 define five user roles. Visibility rules in re:SearchTX are governed by these roles.
+**Navigation:**  
+[Home](../../README.md) › [Technical Documentation](../README.md) › [Support Playbook](./index.md) › JCIT Roles
 
-Understanding the role of the user experiencing the issue is the first step in troubleshooting.
+JCIT defines a standard set of user roles and visibility levels. re:SearchTX adheres strictly to these standards.
 
-## 2.1 Role Summary
+---
 
-Role 1A–1C: Judges  
-- Full access to all records  
-- Can view sealed and confidential items  
-- Case-level and document-level security enforced only for auditing
+## Purpose
 
-Role 2: Attorneys of Record  
-- Access to cases in which they are an attorney of record  
-- Cannot see sealed documents unless explicitly permitted
+Define the visibility and access levels for each user role across case categories and document types.
 
-Role 3A–3B: Clerks  
-- Full access to their own county  
-- Some restrictions on sealed cases depending on policy
+---
 
-Role 4: Non-Public Agency Users  
-- Includes law enforcement and other government agencies  
-- Access defined by statute, not public rules
+## JCIT Role Definitions
 
-Role 5: Registered Public Users  
-- The most restrictive  
-- Can only see:
-  - Public civil and probate cases
-  - Limited family case index
-  - Limited criminal documents
-  - No sealed or confidential materials
+| Role | Description |
+|------|-------------|
+| Role 5 | Public registered user |
+| Role 4 | Attorney of record |
+| Role 3 | Party to the case |
+| Role 2 | Court staff |
+| Role 1 | System/admin |
 
-## 2.2 Why Role 5 Creates Most Issues
+---
 
-Role 5 cannot see:
-- Confidential cases
-- Sealed cases
-- Any case containing a confidential/sealed document
-- Many family case types
-- Most criminal documents
-- Cases under 31-day/180-day delays
+## Visibility Overview
 
-Most visibility-related tickets originate here.
+diagram placeholder
 
-Reference: JCIT Technology Standards v10.0, Section 5.1.
+Visibility depends on:
+
+- Case type  
+- CaseSecurity  
+- DocumentSecurity  
+- Role  
+- County participation  
+
+---
+
+## Related Topics
+
+- [Registered User Matrix](./registered-user-matrix.md)
+- [Security Logic](./security-logic.md)
+- [Troubleshooting](./troubleshooting.md)

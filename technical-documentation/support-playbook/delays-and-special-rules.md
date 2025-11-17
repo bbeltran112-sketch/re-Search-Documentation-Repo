@@ -1,61 +1,30 @@
-# 5. Visibility Delays and Special Rules
+# Delays and Special Rules
 
-Certain case types and scenarios require additional rules to determine visibility for Role 5 users. These rules come from statutory requirements and JCIT Technology Standards.
+**Navigation:**  
+[Home](../../README.md) › [Technical Documentation](../README.md) › [Support Playbook](./index.md) › Delays & Special Rules
 
-This section outlines all known delay windows, protected style behaviors, and special-case visibility rules applied in re:SearchTX.
+JCIT defines timing and special restrictions for certain case types.
 
-## 5.1 Family Case 31-Day Delay
+---
 
-Many Family case types require a 31-day waiting period before a case becomes visible to public users. This is based on JCIT privacy recommendations to protect sensitive filings.
+## Delays
 
-During the delay:
-- Case may appear to internal users
-- Case will **not** appear to Role 5 users
+- **31-Day Delay** — Criminal case visibility delay for certain filings  
+- **180-Day Delay** — Juvenile case time-based restrictions  
 
-## 5.2 Eviction Appeal 180-Day Delay
+---
 
-Some residential eviction appeals (typically from Justice Courts to County Courts) require a 180-day delay before case information can be displayed publicly.
+## Special Rules
 
-This is often encountered when:
-- CaseCategory = Civil, CaseType = Eviction
-- Case escalates or is appealed
+- Protected styles  
+- Restricted identifiers  
+- Statutorily shielded documents  
+- CPS and juvenile restrictions  
 
-## 5.3 Protected Style Requirements
+---
 
-JCIT requires certain Family case types to display only a protected style (“Protected vs Protected”) to public users.
+## Related Topics
 
-Example:
-
-Original:
-
-
-Protected style does not affect clerk or internal visibility.
-
-## 5.4 Criminal Case Restrictions
-
-Public users may only view five document types for criminal cases:
-- Information
-- Indictment
-- Sentence
-- Judgment
-- Order of Dismissal
-
-All other documents remain restricted regardless of case-level security.
-
-## 5.5 Juvenile, Adoption, and Mental Health Restrictions
-
-These case types are categorically restricted from public view:
-- Juvenile (including delinquency)
-- Adoption
-- Mental health commitments
-
-No visibility delays apply; these are entirely hidden.
-
-## 5.6 Additional Special Rules
-
-- Cases missing necessary JCIT fields do not appear to the public.
-- Any case containing a confidential or sealed document is hidden from Role 5 entirely.
-- Cases using non-standard case types may default to restricted visibility.
-
-## [Placeholder] Delay Logic Diagram
-
+- [Registered User Matrix](./registered-user-matrix.md)
+- [Security Logic](./security-logic.md)
+- [Troubleshooting](./troubleshooting.md)

@@ -1,57 +1,57 @@
-# 1. System Overview
+# Support Playbook Overview
 
-re:SearchTX is a statewide case lookup and document access platform driven by data from two primary sources:
+**Navigation:**  
+[Home](../../README.md) › [Technical Documentation](../README.md) › [Support Playbook](./index.md) › Overview
 
-1. Integrated CMS systems
-2. The Electronic Filing Manager (EFM)
+The Support Playbook defines how re:SearchTX interprets case data, enforces JCIT standards, processes EventTypes, and updates indexed content. It serves as the foundation for support, onboarding, and vendor troubleshooting.
 
-Understanding which system provides which data is critical for troubleshooting visibility issues.
+---
 
-## 1.1 Integrated Counties
+## Purpose
 
-Integrated counties provide their own:
-- Case index and core metadata
-- Case-level security
-- Document metadata
-- Party and attorney information
-- Case type and category
+This overview provides:
 
-Documents for integrated counties are still routed through the EFM, but document metadata may originate from either system depending on the configuration.
+- A high-level understanding of re:Search’s processing model  
+- Core concepts used throughout the playbook  
+- Definitions of visibility, indexing, and CMS interactions  
 
-## 1.2 Non-Integrated Counties
+---
 
-Non-integrated counties rely entirely on the EFM for:
-- Case index metadata
-- Case category and case type (EFM mappings)
-- Document metadata
-- Security information
+## Core Concepts
 
-This means visibility for non-integrated counties is affected by:
-- The EFM’s internal configuration and mappings
-- The standardization of document types
-- The consistency of filing metadata from EFSPs
+### Case as the System of Record
+The CMS is authoritative for:
 
-## 1.3 Required Fields for Indexing
+- Case metadata  
+- Filings  
+- Parties & attorneys  
+- Security  
+- Docket history  
 
-re:SearchTX requires the following minimum fields for a case to appear in search:
+### EventType-Driven Processing
+EventTypes determine which sections of the GetCaseResponse are evaluated.
 
-- Case Category
-- Case Type
-- Filed Date
-- Location (County/Office)
-- Style or Protected Style
-- CaseSecurity
-- DocumentSecurity
+### JCIT Visibility Rules
+Registered users see different content based on:
 
-Missing required fields may cause:
-- Case not appearing in search
-- Case appearing without documents
-- Case visible internally but not publicly
+- Role  
+- Case type  
+- CaseSecurity  
+- DocumentSecurity  
 
-## 1.4 Architecture Overview
+### Indexing Triggers
+Reindex operations occur when:
 
-The general data flow is:
+- NotifyCaseEvent is received  
+- NotifyDocketingComplete is processed  
+- Security changes  
+- Correction of stale or invalid vendor XML  
 
-CMS or EFM → NotifyCaseEvent → DAS → Search Index → re:SearchTX UI
+---
 
-## [Placeholder] Architecture Diagram
+## Related Topics
+
+- [JCIT Roles](./jcit-roles.md)
+- [EventType Logic](./eventtype-logic.md)
+- [Security Logic](./security-logic.md)
+- [Troubleshooting](./troubleshooting.md)

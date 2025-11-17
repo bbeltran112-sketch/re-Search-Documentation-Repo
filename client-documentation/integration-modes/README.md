@@ -1,72 +1,31 @@
 # Integration Modes Overview
 
-The re:Search platform supports multiple integration modes to accommodate the diverse CMS environments and technical requirements across Tyler markets.  
-These modes define how case, filing, party, and document data flows from a **Case Management System (CMS)** into **re:Search**.
+**Navigation:**  
+[Home](../../../README.md) › [Client Documentation](../README.md) › Integration Modes
 
-As of 2025, Tyler’s strategy is to standardize all new integrations on the **Batch Mode** framework.
-
----
-
-## Summary of Integration Modes
-
-| Mode | Description | Primary Use Case | Status |
-|------|-------------|------------------|--------|
-| **Batch Mode** | Scheduled, file-based delivery of JSONL snapshots via S3/SFTP. | All new CMS integrations | Standard |
-| **ECF Mode** | Event-driven communication using EFM SOAP APIs. | Legacy vendor integrations | Maintained |
-| **CIP Mode (EJ)** | Direct EJ REST/XML communication. | Historic EJ implementations | Phasing out |
-| **Non-Integrated** | No CMS integration; only e-filing activity. | Small or pilot courts | Limited |
+This page summarizes all supported re:Search integration methods and their intended audiences.
 
 ---
 
-## Batch Mode (Standard)
+## Supported Modes
 
-Batch Mode uses scheduled JSONL file delivery instead of APIs.  
-It is the preferred integration method for all new markets and migrations.
-
-**Learn more:**  
-[Batch Mode Overview](./batch-mode-overview.md)
-
----
-
-## ECF Mode
-
-ECF Mode uses event-driven messages (`NotifyCaseEvent`, `RecordFiling`, etc.) between the CMS, EFM, and re:Search.
-
-**Learn more:**  
-[ECF Mode Overview](./ecf-mode-overview.md)
+| Mode | Description |
+|------|-------------|
+| **Batch** | JSONL + S3 ingestion; ideal for non-ECF courts |
+| **ECF** | CMS → EFM → re:Search using ECF 4.x SOAP |
+| **CIP** | Legacy EJ → re:Search REST API |
+| **Non-Integrated** | Direct ingestion from clerks via BIS tooling |
 
 ---
 
-## CIP Mode (Enterprise Justice)
+## Selection Guidance
 
-Used exclusively by EJ courts and now being retired in favor of Batch Mode.
-
-**Learn more:**  
-[CIP Mode Overview](./cip-mode-overview.md)
+See the decision tree:  
+➡ **[Mode Selection Decision Tree](./selection-decision-tree.md)**
 
 ---
 
-## Non-Integrated Mode
+## Related Technical Areas
 
-Used only where no automated integration exists and data flows solely from the e-filing platform.
-
-**Learn more:**  
-[Non-Integrated Mode Overview](./non-integrated-mode-overview.md)
-
----
-
-## Integration Mode Selection Decision Tree
-
-A simple decision guide for choosing the correct integration model.
-
-[View the Decision Tree](./selection-decision-tree.md)
-
-## Related Documentation
-
-- [Batch Mode Overview](./batch-mode-overview.md)  
-- [ECF Mode Overview](./ecf-mode-overview.md)  
-- [CIP Mode Overview](./cip-mode-overview.md)  
-- [Non-Integrated Mode Overview](./non-integrated-mode-overview.md)  
-- [Integration Mode Selection Decision Tree](./selection-decision-tree.md)  
-
-**Back to:** [Client Documentation](../README.md)
+- [API Reference](../../technical/api-reference/README.md)  
+- [Support Playbook](../../technical/support-playbook/index.md)
