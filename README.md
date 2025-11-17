@@ -63,7 +63,7 @@ Start with:
 |--------|-------------|
 | [API Reference](./technical-documentation/api-reference/README.md) | All core APIs (NCE, NDC, GetCase, GetDocument, RecordFiling) |
 | [Support Playbook](./technical-documentation/support-playbook/README.md) | JCIT rules, security logic, troubleshooting |
-| [XML Library](./technical-documentation/xml-library/xml-library.md) | Canonical XML samples |
+| [XML Library](./technical-documentation/xml-library/README.md) | Canonical XML samples |
 
 ---
 
