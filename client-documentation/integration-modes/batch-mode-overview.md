@@ -1,39 +1,52 @@
 # Batch Mode Overview
 
-Batch Mode is the **standard integration model** for all new re:Search implementations.  
+**Navigation:**  
+[Home](../../../README.md) › [Client Documentation](../README.md) › [Integration Modes](./README.md) › Batch Mode
 
-It uses scheduled JSONL snapshot deliveries instead of APIs, offering predictable, scalable, and schema-driven ingestion.
+Batch Mode is one of the four supported re:Search integration methods.  
+It uses scheduled **JSON snapshot deliveries**—not APIs—to synchronize case, filing, party, and document metadata.
+
+This mode is ideal for courts and CMS vendors who prefer **predictable**, **schema-driven**, and **high-volume** ingestion.
+
+<br>
 
 ---
 
-## At a Glance
+## 📌 At a Glance
+
+Below is a quick summary of the Batch Mode integration pattern:
 
 | Attribute | Description |
 |----------|-------------|
 | **Pattern** | Scheduled snapshot delivery |
 | **Format** | JSON Lines (`.jsonl` / `.jsonl.gz`) |
 | **Transport** | AWS S3 (preferred) or SFTP |
-| **CMS Role** | Export, package, and upload data |
-| **re:Search Role** | Retrieve, validate, and index |
-| **Primary Benefit** | Predictable, schema-based ingestion |
+| **CMS Responsibility** | Export, package, and upload snapshot files |
+| **re:Search Responsibility** | Detect, validate, and index files |
+| **Primary Benefit** | Predictable, schema-based ingestion with large throughput |
+
+<br>
 
 ---
 
-## How It Works
+## 🔍 How It Works
 
-The **Batch Integration Mode** provides a scheduled, file-based method for CMS vendors to supply complete case data snapshots to **re:Search**.  
-Unlike ECF integrations that depend on real-time API traffic, Batch mode delivers **periodic, authoritative exports** of case information via secure file transfer (typically nightly).
+Batch Mode provides a **file-based ingestion pattern** that delivers complete or partial case datasets on a defined schedule.  
+Unlike ECF mode, which relies on real-time SOAP APIs, Batch Mode is **offline**, repeatable, and optimized for large courts.
 
-This mode is ideal for CMS vendors who do not have an existing ECF pipeline or whose courts prefer periodic data refreshes instead of continuous synchronization.
+**Typical Workflow:**
 
-1. CMS exports case/filing/party/document metadata.  
-2. CMS generates one or more JSONL data files.  
-3. CMS generates a `manifest.json` describing file contents.  
+1. CMS exports case, filing, party, and document metadata.  
+2. CMS generates JSONL files according to schema.  
+3. CMS creates a `manifest.json` describing the batch.  
 4. CMS uploads all files to S3 or SFTP.  
-5. re:Search detects the batch and begins ingestion.  
-6. Data is validated, indexed, and surfaced in the UI.
+5. re:Search detects the upload.  
+6. re:Search validates, parses, and indexes the batch.
 
-**Diagram**  
+<br>
+
+**Diagram**
+
 ```mermaid
 sequenceDiagram
     participant CMS as Case Management System
@@ -52,89 +65,84 @@ sequenceDiagram
     RSCH->>IDX: Index valid cases, filings, and documents
     IDX->>UI: Display searchable case and document data
 ```
----
-## Benefits
 
-- Simple setup, minimal firewall requirements  
-- Works for both EJ and third-party CMS vendors  
+---
+## ⭐ Benefits
+
+- Low barrier to implement (no SOAP/REST APIs)  
+- Works with EJ, legacy, or modern CMS platforms  
 - Supports nightly, hourly, or periodic ingestion  
-- Highly scalable for statewide deployments  
-- Schema-driven validation increases data quality  
-- Reprocessing and historical corrections supported 
+- Scales to millions of records  
+- Schema-based validation ensures data quality  
+- Supports historical backfills and reprocessing  
 
 ---
 
-## Limitations
+## ⚠️ Limitations
 
 - Not real-time  
-- Requires full export per run unless using deltas  
-- Large courts require efficient JSONL generation  
-- Manifest accuracy is critical for successful ingestion  
+- Requires full or delta export generation  
+- Manifest accuracy is critical  
+- JSONL must strictly follow schema formatting  
+- Document binary handling may require separate delivery  
+
 ---
 
-## Lifecycle & Strategy
+## 🚀 Lifecycle & Strategy
 
-- Batch Mode is the **long-term standard** for all integrations  
-- CIP migrations target completion by **mid-2026**  
-- ECF supported only for legacy vendors  
+- Batch Mode is the **long-term standard** for re:Search integration  
+- CIP migrations expected to complete by mid-2026  
+- ECF reserved only for legacy EFM-connected vendors  
 - Future enhancements include:  
-  - Stream-validated uploads  
-  - Incremental delta batches  
-  - Enhanced ingestion diagnostics  
+  - Delta batches  
+  - Streaming validators  
+  - Enhanced diagnostics  
+
 ---
 
-## Transport & Authentication
+## 🔐 Transport & Authentication
 
-### No REST/SOAP API's
+Batch Mode **does not use APIs**.  
+All ingestion occurs through **file delivery** using S3 or SFTP.
 
-Batch Mode **never** uses HTTP API calls.
-
-Instead, the CMS drops files using one of the following:
+### Delivery Methods
 
 | Method | Description | Security |
-|---|---|---|
-| **AWS S3 (Preferred)** | Direct upload to Tyler S3 bucket | Access key encryption, HTTPS, IAM isolation |
-| **SFTP (Alternate)** | File transfer to Tyler SFTP endpoint | SSH key authentication, folder isolation |
+|--------|-------------|----------|
+| **AWS S3 (Preferred)** | Upload snapshots to Tyler-managed buckets | IAM access keys, HTTPS, bucket isolation |
+| **SFTP (Alternate)** | Upload snapshots via Tyler SFTP | SSH key auth, directory isolation |
 
----
-
-### S3 Example
-
-A typical S3 path structure:
-
+### S3 Example Path
 ```text
 s3://tx-research-ingest/<CMS>/<CourtCode>/<YYYY-MM-DD>/
-  manifest.json
-  cases_0001.jsonl.gz
-  filings_0001.jsonl.gz
-  documents_0001.jsonl.gz
+manifest.json
+cases_0001.jsonl.gz
+filings_0001.jsonl.gz
+documents_0001.jsonl.gz
 ```
----
-
-### SFTP Example
-
-A typical S3 path structure:
-
+### SFTP Example Path
 ```text
 Host: sftp.tylerhost.net
 Path: /research/<CMS>/<CourtCode>/<YYYY-MM-DD>/
 User: <provided>
 Password/Key: <provided>
 ```
+
+
 ---
 
-## Manifest and Schema
+## 📄 Manifest & Schema Requirements
 
-Each batch must include a manifest.json file that:
-- Identifies the batch (batchId)
-- Specifies the schema version
-- Lists each data file with type, path, record count, and checksum
-- Defines the scope (courts and effective date)
-All referenced files must exist in the same folder as the manifest.
+Each batch must include a `manifest.json` file that:
 
-Each batch run must include a `manifest.json` file that describes the snapshot contents and verifies data integrity. All referenced files must exist in the same folder.
+- Identifies the batch (`batchId`)  
+- Specifies schema version  
+- Lists each file with record count and checksum  
+- Defines the court scope and effective date  
+- References only files present in the same directory  
 
-**Example Manifest**
+### Example Manifest
+
 ```json
 {
   "batchId": "ELLIS-2025-11-12-0100",
@@ -151,12 +159,26 @@ Each batch run must include a `manifest.json` file that describes the snapshot c
   }
 }
 ```
+
+## 🔗 Related Documentation
+
+### Integration
+
+- **Batch Mode Overview** (this page)  
+- **[ECF Mode Overview →](./ecf-mode-overview.md)**  
+- **[CIP Mode Overview →](./cip-mode-overview.md)**  
+- **[Non-Integrated Mode Overview →](./non-integrated-mode-overview.md)**  
+- **[Integration Modes Index →](./README.md)**  
+
+### Technical
+
+- **[NotifyCaseEvent API →](../../technical-documentation/api-reference/notifycaseevent/README.md)**  
+- **[API Reference Index →](../../technical-documentation/api-reference/README.md)**  
+- **[Support Playbook →](../../technical-documentation/support-playbook/README.md)**  
+
 ---
 
-## Related Documentation
+## ⬅ Back to
 
-- [Batch Mode Overview](./batch-mode-overview.md)
-- [NotifyCaseEvent API Reference](../../technical-documentation/api-reference/notifycaseevent/README.md)
-- [Integration Modes Overview](./README.md)
+**[Integration Modes](./README.md)**
 
-**Back to:** [Integration Modes](./README.md)

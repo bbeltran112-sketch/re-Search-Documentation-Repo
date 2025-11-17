@@ -1,76 +1,139 @@
 # Testing & Certification – Client Onboarding
 
-This section defines how CMS vendors validate and certify their integration with re:Search.
+**Navigation:**  
+[Home](../../../README.md) › [Client Documentation](../README.md) › [Client Onboarding](./README.md) › Testing & Certification
+
+This page defines the testing phases, expectations, and certification criteria required before a court or CMS vendor is approved for go-live in re:Search.
 
 ---
 
-## 1. Test Scenarios
+# 🎯 Purpose
 
-You must complete the following scenarios:
+The testing and certification process ensures:
 
-### Case Creation & Updates
-- Case initiation  
-- Case update via NotifyCaseEvent  
-- Case reassignment  
-- Party changes  
-- Security changes  
+- Data accuracy  
+- Security rule compliance  
+- End-to-end workflow validation  
+- Alignment between CMS behavior and re:Search UI behavior  
+- Stable ingestion (Batch) or event routing (ECF)  
 
-### Filings
-- RecordFiling workflow  
-- NotifyDocketingComplete  
-- Document associations  
-- Multiple filings in a case  
-
-### Document Retrieval
-- Full document IDs  
-- GetDocument success  
-- Security enforcement  
+Testing is a collaboration between **CMS vendors**, **courts**, and **Tyler BIS**.
 
 ---
 
-## 2. Batch Mode Tests
-- Upload valid manifest + files  
-- Validate schema failures  
-- Validate missing file errors  
-- Validate ingestion timestamp  
-- Confirm case visibility in UI  
+# 🧪 Testing Phases
+
+## 1. **Technical Validation**
+The initial verification that your integration *works at a transport and schema level*.
+
+### Includes:
+- Connectivity validation (S3/SFTP or SOAP/mTLS)  
+- Schema conformance  
+- Basic sample ingestion (Batch)  
+- Event delivery and GetCase responses (ECF)  
+- Confirming required fields and identifiers  
+- Security alignment tests (public/confidential/sealed)  
+
+**Outcome:** Vendor is cleared to begin functional testing.
 
 ---
 
-## 3. ECF Mode Tests
-- All SOAP messages validated  
-- NotifyCaseEvent covers all event types  
-- GetCase returns full case payload  
-- GetDocument returns real binaries  
+## 2. **Functional Testing**
+Ensures real-world workflows behave as expected.
+
+### Required Functional Scenarios:
+- Case creation / updates  
+- Party and attorney changes  
+- Case security updates (sealed, confidential, public)  
+- Document metadata and document-level security  
+- Disposition changes  
+- Case deletions / expungements  
+- Filing workflows (ECF vendors)  
+- UI verification using court SMEs  
+
+**Outcome:** Court and vendor confirm functional readiness.
 
 ---
 
-## 4. Error Testing
-You must intentionally trigger:
+## 3. **End-to-End Certification**
+Final review performed by **Tyler BIS**.
 
-- Bad schema  
-- Unsupported data types  
-- Invalid CMSIDs  
-- Invalid case identifiers  
-- Missing security fields  
+### Review Focus:
+- Full data consistency  
+- No schema failures or ingestion defects  
+- No missing identifiers  
+- Correct application of JCIT security standards  
+- UI behavior matches expected visibility rules  
+- All event types routed properly (ECF)  
+- Court SMEs sign off on case accuracy  
 
-This ensures robust integration.
-
----
-
-## 5. Certification Sign-Off
-
-To complete certification:
-
-1. All tests must pass  
-2. All required fields must be implemented  
-3. All event types must map correctly  
-4. All documents must retrieve successfully  
-
-Once complete, Tyler BIS will approve go-live readiness.
+**Outcome:** Vendor is approved for production deployment.
 
 ---
 
-Next step:  
-➡️ **Go-Live Readiness**  
-`./07-go-live-readiness.md`
+# 📋 Required Test Cases
+
+### Vendors must supply examples for:
+- Public cases  
+- Confidential cases  
+- Sealed cases  
+- Juvenile or restricted cases (if applicable)  
+- Cases with multiple documents  
+- Cases with docket corrections  
+- Cases with party/attorney lifecycle updates  
+- Filings with multi-document packages (ECF only)
+
+### Courts must validate:
+- Case list accuracy  
+- Case header data  
+- Party roles and visibility  
+- Document visibility rules (padlock/gavel mapping)  
+- Location/judge assignments  
+- Docket detail correctness  
+
+---
+
+# 🧭 Certification Checklist
+
+A vendor is eligible for certification when:
+
+- ✔ All integrations run without schema errors  
+- ✔ Security model matches JCIT-aligned rules  
+- ✔ CMS identifiers (case numbers, IDs, locations) are stable  
+- ✔ EventType usage is correct (ECF only)  
+- ✔ No broken document metadata  
+- ✔ No missing GetCase fields  
+- ✔ Court SMEs validate 10–20 test cases end-to-end  
+- ✔ Final regression test passes  
+
+---
+
+# 📅 What Happens After Certification?
+
+Once BIS certifies the integration:
+
+1. A production cutover window is scheduled  
+2. Access credentials or S3/SFTP production paths are issued  
+3. The vendor receives a go-live checklist  
+4. BIS monitors initial ingestion or event activity  
+5. Post-launch review is conducted during the first 1–3 weeks  
+
+---
+
+# 🔗 Related Documentation
+
+**Integration**  
+- [Integration Modes Overview](../integration-modes/README.md)  
+- [Batch Mode Overview](../integration-modes/batch-mode-overview.md)  
+- [ECF Mode Overview](../integration-modes/ecf-mode-overview.md)  
+- [Non-Integrated Mode Overview](../integration-modes/non-integrated-mode-overview.md)  
+
+**Technical**  
+- [API Reference Index](../../technical-documentation/api-reference/README.md)  
+- [Support Playbook](../../technical-documentation/support-playbook/README.md)  
+
+---
+
+# ⬅ Back to
+
+**[Client Onboarding Home](./README.md)**  

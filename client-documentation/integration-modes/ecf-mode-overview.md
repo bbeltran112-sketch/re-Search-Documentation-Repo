@@ -1,82 +1,103 @@
 # ECF Mode Overview
 
-ECF Mode is an event-driven integration that relies on a **three-way coordination** between systems:
+**Navigation:**  
+[Home](../../../README.md) › [Client Documentation](../README.md) › [Integration Modes](./README.md) › ECF Mode
 
-- **CMS** – Publishes case-related changes and initiates event messages  
-- **EFM** – Processes and routes e-filing submissions  
-- **re:Search** – Consumes events and retrieves authoritative data for indexing and display  
+ECF Mode is an **event-driven** integration method used primarily by legacy CMS vendors who already support the statewide **EFM (Electronic Filing Manager)**.  
+It relies on **real-time SOAP/XML messaging**, coordinated between:
 
-This structure allows for continuous synchronization of case data across all systems participating in the e-filing lifecycle.
+- **CMS** – Publishes case updates and responds to GetCase  
+- **EFM** – Routes e-filing submissions (RecordFiling / NotifyDocketingComplete)  
+- **re:Search** – Receives events and synchronizes with CMS using GetCase  
+
+This creates a continuous synchronization model for courts participating in e-filing.
+
+---
+
+## 📌 Summary
+
+| Attribute | Description |
+|-----------|-------------|
+| **Primary Use** | Legacy real-time ECF integrations |
+| **Pattern** | Event-driven (NotifyCaseEvent + docketing updates) |
+| **Transport** | SOAP 1.2 over HTTPS |
+| **Dependencies** | EFM, CMS, mTLS, ECF 4.x schema compliance |
+| **Real-Time** | Yes |
+| **Complexity** | High |
 
 ---
 
-## Key Concepts
-
-- The **EFM** acts as the central message broker for filings and case events.  
-- Vendors send standardized ECF 4.x messages to update filings, case parties, security, and dockets.  
-- re:Search retrieves the authoritative case record directly from the CMS using **GetCase**.  
-- All communication uses **SOAP/XML over HTTPS** with **mutual TLS (mTLS)**.
-
----
-## When to Use ECF Mode
+## 🧭 When to Use ECF Mode
 
 ECF Mode is appropriate when:
 
-- The CMS already supports ECF 4.x  
-- The state uses an EFM and requires event-driven messaging  
-- Real-time posting is required  
+| Scenario | Use ECF Mode When… |
+|----------|---------------------|
+| **Existing ECF Infrastructure** | CMS already supports ECF 4.x and connects to the EFM |
+| **Real-Time Requirements** | Court requires immediate synchronization of filings and case updates |
+| **Legacy Integrations** | Court is already wired into EFM and cannot move to Batch yet |
+
 ---
 
-## Limitations
+## ⚠️ Limitations
 
-- Requires mTLS, SOAP/XML, and ECF 4.x validation  
+- Requires **SOAP/XML**, ECF 4.x schemas, and strict WSDL conformance  
 - Higher complexity than Batch Mode  
-- Not used for new implementations (legacy only)  
-- EventType must match the type of update (important for re:Search processing)  
+- Only used for **legacy** and **EFM-connected** vendors  
+- EventType accuracy is critical for correct re:Search behavior  
 ---
 
-## How ECF Mode Works
+## 🔍 How ECF Mode Works
 
-### 1. Filing Submitted
-The EFSP submits a filing package to the EFM using standard ECF XML.
+### Filing Workflow (via EFM)
 
-### 2. Filing Routed to CMS  
-EFM forwards the filing to the CMS through a `RecordFiling` request.
+1. **EFSP submits a filing** to the EFM  
+2. **EFM routes the filing** to the CMS through a `RecordFiling` call  
+3. **CMS processes and dockets** the filing  
+4. **CMS sends NotifyDocketingComplete** back to the EFM  
+5. **EFM notifies re:Search**, which triggers:  
+   - re:Search → CMS **GetCase**  
+   - re:Search indexes updated case data  
 
-### 3. CMS Accepts & Dockets  
-CMS processes the filing and responds with `NotifyDocketingComplete`.
+**Diagram**  
+```mermaid
+sequenceDiagram
+    participant EFSP as Electronic Filing Service Provider
+    participant EFM  as Electronic Filing Manager
+    participant CMS  as Case Management System
+    participant RSCH as re:Search
+    participant IDX  as re:Search Index
 
-### 4. CMS Sends Case Updates  
-For all non-filing updates (parties, security, dispositions, etc.), CMS sends `NotifyCaseEvent` directly to re:Search.
+    %% ===================== E-FILING WORKFLOW =====================
+    Note over EFSP,RSCH: E-FILING WORKFLOW (via EFM)
 
-### 5. re:Search Retrieves the Case  
-After any event (filing or non-filing), re:Search performs a `GetCase` call to obtain the full, authoritative case snapshot.
+    EFSP->>EFM: Submit Filing (ECF 4.x)
+    EFM->>CMS: RecordFiling (metadata + documents)
+    CMS-->>EFM: Filing Receipt / Acknowledgment
 
-### 6. re:Search Indexes the Case  
-The case is indexed and becomes searchable within the platform.
+    EFM-->>RSCH: Notify: Filing Received
+    RSCH->>CMS: GetCase (retrieve latest case/filing data)
+    CMS-->>RSCH: GetCaseResponse (case + filings)
+    RSCH->>IDX: Index update (pre-docket refresh)
 
-**Diagram placeholder**  
-(Add a GitHub Mermaid diagram here if desired.)
+    CMS-->>EFM: NotifyDocketingComplete (filing accepted/docketed)
+    EFM-->>RSCH: Notify: Filing Docketed
+    RSCH->>CMS: GetCase (post-docket confirmation)
+    CMS-->>RSCH: GetCaseResponse (authoritative record)
+    RSCH->>IDX: Index update (finalize)
+```
 
 ---
 
-### Outside of e-Filing (Direct CMS Updates)
+## 🔄 CMS → re:Search (Outside e-Filing)
 
-For case activity that occurs **outside the e-filing workflow**—such as case party updates, new documents, or security changes—the CMS communicates directly with re:Search.
+For updates occurring **outside** the filing workflow:
 
-1. **NotifyCaseEvent Sent**  
-   The **CMS** sends a `NotifyCaseEvent` message directly to **re:Search**, indicating a change has occurred.  
-   Each message includes an `EventType` (e.g., `CaseFiling`, `CaseParty`, `CaseSecurity`) that tells re:Search what type of update to process.
+1. CMS sends **NotifyCaseEvent** with the appropriate `EventType`  
+2. re:Search retrieves the full case using **GetCase**  
+3. Case data is indexed and becomes searchable  
 
-2. **re:Search Retrieves Updated Case Data**  
-   Upon receiving the event, **re:Search** sends a `GetCase` request to the **CMS** to pull the full case record and any associated updates.
-
-3. **Case Indexed in re:Search**  
-   The retrieved case data is indexed, ensuring re:Search reflects the latest details, including updated parties, filings, or document security settings.
-
----
-## Data Flow Diagram
-
+**Diagram Placeholder:**  
 ```mermaid
 sequenceDiagram
     participant EFSP as Electronic Filing Service Provider
@@ -113,14 +134,56 @@ sequenceDiagram
 
 ```
 ---
+# 📡 APIs Used in ECF Mode
 
-## Related Documentation
+These are the **required APIs** for an ECF Mode integration.  
+Grouped by workflow for clarity.
 
-- [Integration Modes Overview](./README.md)  
-- [Batch Mode Overview](./batch-mode-overview.md)  
-- [CIP Mode Overview](./cip-mode-overview.md)  
-- [Non-Integrated Mode Overview](./non-integrated-mode-overview.md)  
-- [Integration Mode Selection Decision Tree](./selection-decision-tree.md)  
-- [NotifyCaseEvent API Reference](../../technical-documentation/api-reference/notifycaseevent/README.md)  
+Please be advised that EFM documentation must also be consulted for this integration mode, and is available in a separate folder.
+---
 
-**Back to:** [Integration Modes](./README.md)
+### 📨 Filing Workflow (EFM ↔ CMS)
+
+| API | Purpose | Link |
+|------|---------|------|
+| **RecordFiling** | EFM → CMS delivery of filing packages | [RecordFiling →](../../technical-documentation/api-reference/recordfiling/README.md) |
+| **NotifyDocketingComplete** | CMS → EFM confirmation of docketing | [NotifyDocketingComplete →](../../technical-documentation/api-reference/notifydocketingcomplete/README.md) |
+
+---
+
+### 🔄 Case Synchronization (CMS → re:Search)
+
+| API | Purpose | Link |
+|------|---------|------|
+| **NotifyCaseEvent** | CMS indicates which case fields changed | [NotifyCaseEvent →](../../technical-documentation/api-reference/notifycaseevent/README.md) |
+| **GetCase** | re:Search retrieves the authoritative case record | [GetCase →](../../technical-documentation/api-reference/getcase/README.md) |
+
+---
+
+### 📄 Document Retrieval (Optional)
+
+| API | Purpose | Link |
+|------|---------|------|
+| **GetDocument** | Retrieve document binaries | [GetDocument →](../../technical-documentation/api-reference/getdocument/README.md) |
+
+---
+
+# 🔗 Related Documentation
+
+### Integration
+
+- **[Integration Modes Overview →](./README.md)**  
+- **[Batch Mode Overview →](./batch-mode-overview.md)**  
+- **[CIP Mode Overview →](./cip-mode-overview.md)**  
+- **[Non-Integrated Mode Overview →](./non-integrated-mode-overview.md)**   
+
+### Technical
+
+- **[API Reference Index →](../../technical-documentation/api-reference/README.md)**  
+- **[Support Playbook →](../../technical-documentation/support-playbook/README.md)**  
+
+---
+
+# ⬅ Back to
+
+**[Integration Modes](./README.md)**

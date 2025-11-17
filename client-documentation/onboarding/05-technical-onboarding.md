@@ -1,84 +1,122 @@
 # Technical Onboarding – Client Onboarding
 
-This section outlines the technical steps required to begin implementation of a re:Search integration.
+**Navigation:**  
+[Home](../../../README.md) › [Client Documentation](../README.md) › [Client Onboarding](./README.md) › Technical Onboarding
+
+This page outlines the technical steps required for vendors and courts to begin building and validating their re:Search integration.  
 
 ---
 
-## 1. Kickoff Requirements
+# 📌 Purpose
 
-### Required Attendees
-- CMS Lead Developer  
-- CMS Architect  
-- Court SME  
-- Tyler BIS Support Analyst  
-- Tyler TPM (Beltran)  
-
-### Required Documents
-- Integration Modes Overview  
-- CMS architecture diagram  
-- Available transport capabilities  
-- API readiness (for ECF)  
-- JSON schema readiness (for Batch)
+Technical onboarding prepares your CMS, development team, and infrastructure for successful integration with re:Search.  
+This includes environment setup, account provisioning, initial configuration, and understanding the APIs or delivery mechanisms used in your chosen integration mode.
 
 ---
 
-## 2. Network & Security Setup
+# 🧰 Technical Setup Requirements
 
-### Batch Mode
-- Configure S3 or SFTP connectivity  
-- Configure secure upload processes  
-- Implement IAM keys or SSH authentication  
+## 1. Environment Access
+Before coding begins, confirm:
 
-### ECF Mode
-- Import Tyler client certificate  
-- Validate outbound HTTPS + mutual TLS  
-- Confirm WSDL compatibility  
+- S3 or SFTP credentials (Batch Mode)  
+- SOAP endpoints + mTLS certs (ECF Mode)  
+- Stage environment endpoint + firewall allowlists  
+- Optional user accounts for UI verification  
 
----
-
-## 3. Message & Schema Setup
-
-### Batch
-- Implement JSON Lines generation  
-- Implement manifest.json creation  
-- Validate schemas before upload  
-
-### ECF
-- Implement the following APIs:  
-  - RecordFiling  
-  - NotifyDocketingComplete  
-  - NotifyCaseEvent  
-  - GetCase  
-  - GetDocument  
-- Validate all XML against ECF 4.x schemas  
-- Apply Tyler extensions (if required)
+Environment details:  
+➡ **[Environment Access →](./02-environment-access.md)**
 
 ---
 
-## 4. Logging & Monitoring
+## 2. Integration Mode Configuration
 
-You must configure logging for:
+Your CMS must be configured according to the selected integration mode:
 
-- SOAP inbound & outbound messages  
-- S3/SFTP transfer logs  
-- Integration failures  
-- Timeouts and retries  
-- Security & authorization failures  
+| Mode | Required Configuration |
+|------|-------------------------|
+| **Batch Mode** | JSONL generation, manifest creation, S3/SFTP upload automation |
+| **ECF Mode** | SOAP client setup, mTLS cert install, WSDL binding, ECF event handling |
+| **Non-Integrated** | BIS-assisted publishing, limited implementation requirements |
 
----
-
-## 5. Development Expectations
-
-- Implement full case payloads (no partial updates)  
-- Implement security fields exactly  
-- Ensure stable CaseTrackingID and CMSID  
-- Ensure document retrieval works reliably  
-- Ensure timestamps are ISO 8601 UTC  
+Integration Mode details:  
+➡ **[Integration Modes Overview →](../integration-modes/README.md)**
 
 ---
 
-## Next Steps
+## 3. Data Mapping & Schema Alignment
 
-Once development begins:  
-➡️ Proceed to **Testing & Certification**  
-`./06-testing-and-certification.md`
+CMS vendors must ensure:
+
+- Case identifiers map consistently to court codes  
+- CaseCategory, CaseType, DocumentType map to valid market-level values  
+- Security classifications are accurate (public, confidential, sealed)  
+- JSONL or XML structures conform to schema expectations  
+
+Validate data samples before certification.
+
+---
+
+# 📡 API & Delivery Enablement
+
+Depending on your integration mode, specific APIs or delivery channels must be enabled.
+
+## Batch Mode
+- JSONL file generation process  
+- Manifest builder  
+- S3 or SFTP delivery automation  
+- Internal validation pipeline (recommended)
+
+## ECF Mode
+- SOAP client configured for:  
+  - **RecordFiling**  
+  - **NotifyDocketingComplete**  
+  - **NotifyCaseEvent**  
+  - **GetCase**  
+  - **GetDocument** (optional)
+- WSDL binding & event routing through EFM  
+- Strict adherence to ECF 4.x schemas  
+
+API reference:  
+➡ **[API Reference Index →](../../technical-documentation/api-reference/README.md)**
+
+---
+
+# 🧪 Preparing for Testing
+
+Before functional testing begins:
+
+### ✔ Development Teams Should
+- Build and deploy the integration into Stage  
+- Validate that transport (S3, SOAP, mTLS) is working  
+- Produce initial data samples for review  
+
+### ✔ Vendors Should Prepare
+- A list of test cases (public, confidential, sealed)  
+- Filings that represent typical workflows  
+- Document metadata samples  
+- Party/attorney/role changes  
+
+### ✔ Courts Should Prepare
+- Court SMEs to validate UI output  
+- Internal acceptance criteria  
+- Known case variations or special workflows  
+
+---
+
+# 🛠 Optional Tools (Recommended)
+
+Although optional, the following internal workflows improve reliability:
+
+- Internal schema validator for JSONL or XML  
+- Pre-ingestion QA automation  
+- Logging dashboards (CloudWatch, ELK, or similar)  
+- Automated retry and alerting for S3/SFTP delivery  
+
+---
+
+# ➡ Next Steps
+
+- **[Testing & Certification →](./06-testing-and-certification.md)**  
+- **[Client Onboarding Home →](./README.md)**  
+- **[Client Documentation Home →](../README.md)**  
