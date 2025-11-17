@@ -115,4 +115,4 @@ These topics are distributed throughout the Support Playbook and API Reference.
 - [Support Playbook](./support-playbook/README.md)  
 - [API Reference](./api-reference/README.md)  
 - [FAQ](./faq/re-search-faq.md)  
-- [XML Library](./xml-library/xml-library.md)
+- [XML Library](./xml-library/README.md)
