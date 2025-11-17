@@ -19,6 +19,15 @@ These are the most frequent causes of re:Search visibility or indexing problems.
 
 ---
 
+### Case Type Mismatch (JCIT Standards Not Followed)
+
+When the CMS sends a case type value that does not exactly match the JCIT standard list, re:Search cannot map the case to any public-access rule. This results in the Public profile displaying a padlock even when caseSecurity and documentSecurity are correct.
+
+For full details, root cause analysis, and the JCIT-approved case type list, see:
+
+[Case Type Mismatch – Troubleshooting Guide](../troubleshooting/case-type-mismatch.md)
+---
+
 ## Related Topics
 
 - [Troubleshooting](./troubleshooting.md)
