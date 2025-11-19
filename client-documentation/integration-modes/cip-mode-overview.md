@@ -1,5 +1,9 @@
 # CIP Mode Overview (Enterprise Justice)
 
+> **⚠️ UNDER CONSTRUCTION**  
+> This documentation is currently being updated. Content may be incomplete or subject to change.  
+> For immediate assistance, contact your Technical Project Manager or the BIS team at [bryce.beltran@tylertech.com](mailto:bryce.beltran@tylertech.com)
+
 CIP Mode is a legacy integration pattern used by Enterprise Justice (EJ) markets, especially Texas.  
 It uses REST/XML to send case and filing updates directly to re:Search.
 
