@@ -1,0 +1,249 @@
+/
+│
+├── README.md                                    # Simple navigation hub
+├── CONTRIBUTING.md
+├── CHANGELOG.md
+│
+├── getting-started/                             # TIER 1: Start here
+│   ├── README.md                                # "Start here" guide
+│   ├── overview.md                              # What is this product?
+│   ├── quickstart.md                            # 5-minute quick start
+│   └── glossary.md                              # Terms and definitions
+│
+├── core-product/                                # TIER 2: Universal documentation
+│   │
+│   ├── README.md                                # Core product overview
+│   │
+│   ├── api/                                     # API Documentation
+│   │   ├── README.md
+│   │   ├── authentication.md
+│   │   ├── error-codes.md
+│   │   │
+│   │   └── endpoints/
+│   │       ├── getcase/
+│   │       │   ├── README.md
+│   │       │   └── examples/
+│   │       ├── getdocument/
+│   │       │   ├── README.md
+│   │       │   └── examples/
+│   │       ├── notifycaseevent/
+│   │       │   ├── README.md
+│   │       │   └── examples/
+│   │       ├── notifydocketingcomplete/
+│   │       │   ├── README.md
+│   │       │   └── examples/
+│   │       └── recordfiling/
+│   │           ├── README.md
+│   │           └── examples/
+│   │
+│   ├── integration/                             # Integration Guides
+│   │   ├── README.md
+│   │   ├── integration-modes.md
+│   │   ├── ecf-mode.md
+│   │   ├── cip-mode.md
+│   │   ├── batch-mode.md
+│   │   └── non-integrated-mode.md
+│   │
+│   ├── onboarding/                              # Universal onboarding process
+│   │   ├── README.md
+│   │   ├── 01-before-you-begin.md
+│   │   ├── 02-environment-access.md
+│   │   ├── 03-cms-preparation.md
+│   │   ├── 04-technical-setup.md
+│   │   ├── 05-testing-certification.md
+│   │   ├── 06-go-live.md
+│   │   ├── 07-post-launch-support.md
+│   │   ├── faq.md
+│   │   └── common-pitfalls.md
+│   │
+│   └── support/                                 # Universal support docs
+│       ├── README.md
+│       ├── troubleshooting.md
+│       ├── common-issues.md
+│       ├── escalation-process.md
+│       └── integration-architecture.md
+│
+└── markets/                                     # TIER 3: Market-specific only
+    │
+    ├── README.md                                # "Which market are you?" guide
+    │
+    ├── texas/                                   # TEXAS MARKET
+    │   ├── README.md                            # Texas overview & JCIT intro
+    │   │
+    │   ├── jcit-compliance/                     # All JCIT requirements
+    │   │   ├── README.md
+    │   │   ├── overview.md
+    │   │   ├── case-types.md
+    │   │   ├── data-exchange.md
+    │   │   ├── data-mapping.md
+    │   │   ├── event-types.md
+    │   │   ├── index-data.md
+    │   │   ├── public-access-matrix.md
+    │   │   └── security-requirements.md
+    │   │
+    │   ├── onboarding/                          # Texas-specific onboarding additions
+    │   │   ├── README.md
+    │   │   └── jcit-certification.md
+    │   │
+    │   └── support/                             # Texas-specific support
+    │       ├── README.md
+    │       ├── jcit-roles.md
+    │       ├── texas-troubleshooting.md
+    │       └── texas-escalation.md
+    │
+    ├── california/                              # CALIFORNIA (if needed)
+    │   ├── README.md
+    │   └── [California-specific docs]
+    │
+    └── [other-markets]/                         # Future markets
+        ├── README.md
+        └── [Market-specific docs]
+
+
+
+# Documentation Navigation Guide
+
+## The Simple 3-Tier System
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  TIER 1: GETTING STARTED                               │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │  Everyone starts here                           │   │
+│  │  • What is this product?                        │   │
+│  │  • Quick start guide                            │   │
+│  │  • Glossary                                     │   │
+│  └─────────────────────────────────────────────────┘   │
+│                          ↓                              │
+└─────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  TIER 2: CORE PRODUCT                                  │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │  Everyone uses this                             │   │
+│  │  • API Documentation                            │   │
+│  │  • Integration Guides                           │   │
+│  │  • Onboarding Process                           │   │
+│  │  • Support & Troubleshooting                    │   │
+│  └─────────────────────────────────────────────────┘   │
+│                          ↓                              │
+└─────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  TIER 3: MARKETS                                       │
+│  ┌────────────────┐  ┌────────────────┐               │
+│  │  TEXAS         │  │  CALIFORNIA    │               │
+│  │                │  │                │               │
+│  │  • JCIT        │  │  • CA-specific │               │
+│  │    Compliance  │  │    (if any)    │               │
+│  │  • TX Support  │  │                │               │
+│  └────────────────┘  └────────────────┘               │
+│                                                         │
+│  Only read your market folder                          │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+```
+
+## User Journey Examples
+
+### Example 1: Non-Texas Implementation
+```
+1. getting-started/ ✓
+2. core-product/api/ ✓
+3. core-product/integration/ ✓
+4. core-product/onboarding/ ✓
+5. DONE - Deploy
+```
+
+### Example 2: Texas Implementation
+```
+1. getting-started/ ✓
+2. core-product/api/ ✓
+3. core-product/integration/ ✓
+4. core-product/onboarding/ ✓
+5. markets/texas/README.md ✓
+6. markets/texas/jcit-compliance/ ✓
+7. markets/texas/onboarding/ ✓
+8. DONE - Deploy with JCIT compliance
+```
+
+## Folder Purpose Quick Reference
+
+| Folder | Purpose | Who Uses It |
+|--------|---------|-------------|
+| `getting-started/` | Product introduction | Everyone |
+| `core-product/api/` | API reference | Everyone |
+| `core-product/integration/` | How to integrate | Everyone |
+| `core-product/onboarding/` | Standard onboarding | Everyone |
+| `core-product/support/` | General troubleshooting | Everyone |
+| `markets/texas/` | Texas-specific requirements | Texas only |
+| `markets/california/` | CA-specific requirements | California only |
+| `markets/[other]/` | Other market requirements | That market only |
+
+## Finding What You Need
+
+### "I need to understand the API"
+→ `core-product/api/`
+
+### "I'm implementing for Texas"
+→ Start with `core-product/`, then add `markets/texas/`
+
+### "I'm implementing for [other state]"
+→ Check if `markets/[state]/` exists
+   - Yes: Use `core-product/` + `markets/[state]/`
+   - No: Just use `core-product/`
+
+### "I have a support issue"
+→ Check `core-product/support/` first
+→ If market-specific, check `markets/[your-market]/support/`
+
+### "I need to know about JCIT"
+→ `markets/texas/jcit-compliance/`
+   (This is the ONLY place JCIT docs exist)
+
+## Why This Structure Works
+
+### Clear Mental Model
+```
+Universal stuff → core-product/
+Specific stuff → markets/[market-name]/
+```
+
+### No Ambiguity
+- If it's in `core-product/`, it applies to everyone
+- If it's in `markets/texas/`, it's Texas-only
+- No questions, no confusion
+
+### Easy to Maintain
+- Core product changes? Edit `core-product/`
+- Texas regulations change? Edit `markets/texas/`
+- New market? Add `markets/new-market/`
+- No cross-contamination
+
+### Scales Naturally
+```
+Current: 1 market with special requirements (Texas)
+Future: Add markets/california/, markets/florida/, etc.
+Core product stays clean regardless of markets added
+```
+
+## Navigation Tips
+
+1. **Always start with the README**
+   - Every folder has a README that tells you what's inside
+   - READMEs guide you to next steps
+
+2. **Follow the tier progression**
+   - Don't skip to Tier 3 without doing Tier 1 & 2
+   - Each tier builds on the previous
+
+3. **Use the search function**
+   - But now you know where things are
+   - No more "is this JCIT for everyone or just Texas?"
+
+4. **Bookmark key pages**
+   - `core-product/api/` for daily reference
+   - `markets/[your-market]/` if applicable
