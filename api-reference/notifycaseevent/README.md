@@ -1,202 +1,325 @@
-# NotifyCaseEvent
+# NotifyCaseEvent API
 
-**Navigation:**  
-[Home](../../../README.md) › [Technical Documentation](../../README.md) › [API Reference](../README.md) › NotifyCaseEvent
+**Navigation:** [Home](../../../README.md) › [Technical Documentation](../../README.md) › [API Reference](../README.md) › NotifyCaseEvent
 
-NotifyCaseEvent (NCE) is used by the CMS to notify re:SearchTX that case data has changed.  
-Each message includes an `eventType` telling re:Search exactly which category of update occurred and which sections of the subsequent GetCaseResponse should be evaluated.
-
-re:Search **only processes XML elements that correspond to the declared `eventType`**.
----
-## Purpose
-
-NotifyCaseEvent allows CMS systems to:
-
-- Trigger synchronization when case data changes  
-- Indicate which parts of the case were modified  
-- Keep re:Search data aligned with the CMS  
-- Maintain visibility, security, and classification parity  
+## Quick Navigation
+- [Request & Response Specification](./request-response.md) - Technical details and examples
+- [Event Types Guide](./event-types.md) - All supported event types
+- [Workflows](./workflows.md) - When and how to send events
+- [XML Examples](./examples/) - Sample request/response files
 
 ---
 
-## Transport and Protocol
+## What is NotifyCaseEvent?
+
+NotifyCaseEvent is the **event notification API** that your CMS calls to tell re:Search when something has changed in a case. It's a lightweight message that triggers re:Search to call GetCase and retrieve the updated data.
+
+**Think of it as:** Your CMS saying "Hey re:Search, case CV-123 just changed - go look at it!"
+
+---
+
+## At a Glance
 
 | Property | Value |
 |---------|--------|
-| Direction | CMS → re:Search |
-| Protocol | SOAP 1.2 over HTTPS |
-| Security | Mutual TLS |
-| Standard | OASIS ECF |
-| Message Type | NotifyCaseEventMessage |
+| **Direction** | CMS → re:Search |
+| **Protocol** | SOAP 1.2 over HTTPS |
+| **Security** | Mutual TLS (mTLS) |
+| **Standard** | OASIS ECF 4.x |
+| **Message Type** | NotifyCaseEventRequest / NotifyCaseEventResponse |
+| **Required?** | Yes (all ECF/CIP integrations) |
+| **Triggers** | GetCase call from re:Search |
 
-Authentication details:  
-[Common Headers & Auth](../common-headers-and-auth.md)
+---
+
+## When to Send NotifyCaseEvent
+
+Send NotifyCaseEvent **immediately after** any of these changes:
+
+### Critical (Send Immediately - Never Delay)
+- ⚠️ **Case sealed/unsealed** (`CaseSecurity`)
+- ⚠️ **Document sealed/restricted** (`DocumentSecurity`)
+
+### Common (Send After Commit)
+- **New filing added** (`CaseFiling`)
+- **Party added/changed** (`CaseParty`)
+- **Attorney added/changed** (`CasePartyAttorney`)
+- **Disposition entered** (`CaseDisposition`)
+- **Judge/division changed** (`CaseReassigned`)
+- **Case status changed** (`CaseStatus`)
+- **New case created** (`CaseInitiated`)
+
+[Complete event type list →](./event-types.md)
 
 ---
 
-## Supported Event Types
-
-See full details in:  
-[EventType Logic](../../support-playbook/eventtype-logic.md)
-
-| EventType | Description |
-|-----------|-------------|
-| CaseFiling | Filing or docket update |
-| CaseParty | Party additions/changes |
-| CasePartyAttorney | Attorney assignment changes |
-| CaseReassigned | Judge/court/location changes |
-| CaseDisposition | Disposition updates |
-| CaseSecurity | Sealed/unsealed/confidential/public |
-| DocumentSecurity | Individual document visibility |
-| CaseDelete | Case marked deleted/restored |
-| CaseExpunge | Case restricted/expunged |
-
----
-## Processing Workflow
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant EFSP as Electronic Filing Service Provider
-    participant EFM  as E-Filing Manager
-    participant CMS  as Case Management System
-    participant RSCH as re:Search
-
-    %% Step summary (optional for docs)
-    %% 1–2. Filing submitted and acknowledged
-    EFSP->>EFM: Submit Filing (ReviewFiling)
-    EFM-->>EFSP: MessageReceipt
-
-    %% 3–4. Filing sent to CMS
-    EFM->>CMS: RecordFiling (CoreFiling + RecordDocketing)
-    CMS-->>EFM: MessageReceipt
-
-    %% Highlighted NotifyDocketingComplete section (gray and translucent)
-    rect rgba(180, 180, 180, 0.15)
-      note over CMS: CMS finishes docketing process
-      CMS->>EFM: NotifyDocketingComplete (RecordDocketingCallback)
-      EFM-->>CMS: MessageReceipt
-    end
-
-    note over CMS,EFM: Includes CMSIDs for filings, documents, parties, attorneys<br/>(echoes EFM Filing ID(s))
-
-    %% re:Search flow
-    EFM-->>RSCH: Notify: Filing Docketed
-    RSCH->>CMS: GetCase (post-docket refresh)
-    CMS-->>RSCH: GetCaseResponse (authoritative record)
-    RSCH->>RSCH: Index update (filings + documents)
-
-    %% Models
-    opt Per-Filing Model
-      note over CMS,EFM: One NotifyDocketingComplete per accepted filing<br/>(single DocumentIdentification)
-    end
-
-    opt Per-Envelope Model (recommended ≥ v3.15)
-      note over CMS,EFM: One NotifyDocketingComplete for entire envelope<br/>(multiple DocumentIdentification elements)
-    end
+## How It Works
 
 ```
+Step 1: Change happens in CMS
+        ↓
+Step 2: CMS sends NotifyCaseEvent (small message with case ID + event type)
+        ↓
+Step 3: re:Search receives event
+        ↓
+Step 4: re:Search calls GetCase to retrieve current data
+        ↓
+Step 5: Case updated in re:Search
+```
 
-### Overview
-
-1. **CMS modifies case data.**  
-2. **CMS sends NotifyCaseEvent** with the correct `eventType`.  
-3. **re:Search calls GetCase** to retrieve the updated full case dataset.  
-4. **Selective evaluation occurs**:  
-   Only the parts of the GetCaseResponse relevant to the `eventType` are processed.  
-5. **Index/UI updates** are applied in the re:Search portal.
-
-Incorrect `eventType` → incorrect evaluation → incorrect visibility.
+**Key concept:** NotifyCaseEvent doesn't contain the actual case data - just enough to tell re:Search what changed and where to look.
 
 ---
 
-## Example XML Files
+## Quick Example
 
-| File | Description |
-|------|-------------|
-| [case-delete.xml](./examples/case-delete.xml) | CaseDelete event sample |
-| [case-disposition.xml](./examples/case-disposition.xml) | CaseDisposition sample |
-| [case-expunge.xml](./examples/case-expunge.xml) | CaseExpunge sample |
-| [case-filing.xml](./examples/case-filing.xml) | CaseFiling sample |
-| [case-party.xml](./examples/case-party.xml) | CaseParty sample |
-| [case-party-attorney.xml](./examples/case-party-attorney.xml) | CasePartyAttorney sample |
-| [case-reassigned.xml](./examples/case-reassigned.xml) | Judge/court/location reassignment |
-| [case-security.xml](./examples/case-security.xml) | CaseSecurity update |
-| [document-filing.xml](./examples/document-filing.xml) | DocumentFiling sample |
-| [document-security.xml](./examples/document-security.xml) | DocumentSecurity update |
-| [generic-example.xml](./examples/generic-example.xml) | Generic example |
-
-### XML Example
-
-#### Example Message (annotated)
+### Request (What You Send)
 
 ```xml
-<!-- SOAP Body: Contains the actual web service message payload -->
-<soapenv:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-   <!-- Web Service Operation: The main service method being called for case event notifications -->
-   <NotifyCaseEvent xmlns="urn:oasis:names:tc:legalxml-courtfiling:wsdl:WebServiceMessagingProfile-Definitions-4.0">
-      <!-- Request Wrapper: Contains the actual notification request parameters -->
-      <NotifyCaseEventRequest>
-         <!-- Notification Message: The core message containing case event details -->
-         <NotifyCaseEventMessage xmlns="urn:tyler:ecf:extensions:CaseNotifyMessage">
-            <!-- Court Information: Identifies which court/jurisdiction this case belongs to -->
-            <CaseCourt xmlns="http://niem.gov/niem/domains/jxdm/4.0">
-               <!-- Court Identification: Unique identifier for the court system -->
-               <OrganizationIdentification xmlns="http://niem.gov/niem/niem-core/2.0">
-                  <!-- Court ID: "lake" identifies the specific court (Lake County court system) -->
-                  <IdentificationID>lake</IdentificationID>
-                  <!-- ID Category: Not used in this message (null) -->
-                  <IdentificationCategoryText xsi:nil="true"/>
-                  <!-- ID Source: Not used in this message (null) -->
-                  <IdentificationSourceText xsi:nil="true"/>
-               </OrganizationIdentification>
-               <!-- Optional Court Details: All set to null/not used in this notification -->
-               <!-- Physical location of the court -->
-               <OrganizationLocation xsi:nil="true" xmlns="http://niem.gov/niem/niem-core/2.0"/>
-               <!-- Full name of the court organization -->
-               <OrganizationName xsi:nil="true" xmlns="http://niem.gov/niem/niem-core/2.0"/>
-               <!-- Primary contact information for the court -->
-               <OrganizationPrimaryContactInformation xsi:nil="true" xmlns="http://niem.gov/niem/niem-core/2.0"/>
-               <!-- Sub-unit within the court (e.g., specific division) -->
-               <OrganizationSubUnitName xsi:nil="true" xmlns="http://niem.gov/niem/niem-core/2.0"/>
-               <!-- Tax identification number for the court -->
-               <OrganizationTaxIdentification xsi:nil="true" xmlns="http://niem.gov/niem/niem-core/2.0"/>
-               <!-- Organizational unit name within the court -->
-               <OrganizationUnitName xsi:nil="true" xmlns="http://niem.gov/niem/niem-core/2.0"/>
-               <!-- Display name of the court -->
-               <CourtName xsi:nil="true"/>
-            </CaseCourt>
-            <!-- Case Identifier: Unique tracking number for this specific case -->
-            <CaseTrackingID xmlns="http://niem.gov/niem/niem-core/2.0">6172150</CaseTrackingID>
-            <!-- Notification Purpose: Describes why this notification is being sent -->
-            <NotificationReason>TEST</NotificationReason>
-            <!-- Event Details: Information about the specific event that triggered this notification -->
-            <Event>
-               <!-- Event Unique ID: Internal identifier for this specific event -->
-               <ID>1234567</ID>
-               <!-- Event Classification: Type of event-->
-               <EventType>CaseFiling</EventType>
-            </Event>    
-         </NotifyCaseEventMessage>
-      </NotifyCaseEventRequest>
-   </NotifyCaseEvent>
-</soapenv:Body>
+<NotifyCaseEvent>
+  <NotifyCaseEventMessage>
+    <!-- Which court? -->
+    <CaseCourt>
+      <OrganizationIdentification>
+        <IdentificationID>Hopkins:cc</IdentificationID>
+      </OrganizationIdentification>
+    </CaseCourt>
+    
+    <!-- Which case? -->
+    <CaseTrackingID>CV-2024-00123</CaseTrackingID>
+    
+    <!-- Why are you notifying? -->
+    <NotificationReason>Party added to case</NotificationReason>
+    
+    <!-- What changed? -->
+    <Event>
+      <ID>EVT-2024-0001</ID>
+      <EventType>CaseParty</EventType>
+    </Event>
+  </NotifyCaseEventMessage>
+</NotifyCaseEvent>
 ```
 
+### Response (What You Get Back)
+
+```xml
+<NotifyCaseEventResponse>
+  <Success>true</Success>
+</NotifyCaseEventResponse>
+```
+
+**That's it!** Simple acknowledgment. re:Search will call GetCase separately.
+
+[See complete examples →](./request-response.md#complete-examples)
+
 ---
 
-## Related API Pages
+## Key Requirements
 
-- [RecordFiling](../recordfiling/README.md)  
-- [NotifyDocketingComplete](../notifydocketingcomplete/README.md)  
-- [GetCase](../getcase/README.md)  
-- [GetDocument](../getdocument/README.md)  
+### Must Include (Required)
+- ✅ Court identification (`OrganizationIdentification/IdentificationID`)
+- ✅ Case tracking ID (`CaseTrackingID`)
+- ✅ Notification reason (`NotificationReason`)
+- ✅ Event ID (`Event/ID`)
+- ✅ Event type (`Event/EventType`)
+
+### Timing Rules (Critical)
+- ✅ Send **after database commit** (not before)
+- ✅ Security events sent **immediately** (never batch/queue)
+- ✅ Other events sent **promptly** (within seconds)
+- ✅ Use async messaging for reliability (recommended)
+
+### What NOT to Include
+- ❌ Case data (use GetCase response for that)
+- ❌ Document binaries
+- ❌ Complete party lists
+- ❌ Large payloads
+
+**Keep it small and fast!**
 
 ---
 
-## Related Topics
+## EventType Determines GetCase Processing
 
-- [EventType Logic](../../support-playbook/eventtype-logic.md)
-- [Security Logic](../../support-playbook/security-logic.md)
-- [Troubleshooting Guide](../../support-playbook/troubleshooting.md)
-- [Full XML Library](../../xml-library/xml-library.md)
+**This is critical:** The EventType you send determines which blocks re:Search processes in the GetCase response.
+
+| EventType You Send | What GetCase Processes |
+|-------------------|------------------------|
+| `CaseFiling` | Filing events, documents |
+| `CaseParty` | Parties and attorneys |
+| `CaseSecurity` | Security settings only |
+| `CaseDisposition` | Disposition data |
+| `CaseInitiated` | **Everything** (complete case) |
+
+**Example:**
+```
+You send: EventType="CaseParty"
+       ↓
+re:Search processes: Only party/attorney blocks in GetCase response
+re:Search ignores: Filings, documents, security, etc.
+```
+
+[Complete EventType mapping →](./event-types.md)
+
+---
+
+## Common Issues
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| **Event not received** | Network/firewall issue | Check connectivity, firewall rules |
+| **GetCase not called** | Invalid EventType or CaseTrackingID | Verify EventType is supported, case exists |
+| **Changes not appearing** | Wrong EventType used | Use correct EventType or CaseInitiated |
+| **Security delay** | Event queued instead of immediate | Send CaseSecurity synchronously |
+| **Duplicate events** | No idempotency check | Add event deduplication logic |
+
+[Complete troubleshooting →](./workflows.md#troubleshooting)
+
+---
+
+## Event Sending Patterns
+
+### Pattern 1: Single Change (Most Common)
+
+```
+Change: Party added
+Action: Send one NotifyCaseEvent with EventType=CaseParty
+Result: GetCase called once, party updated
+```
+
+### Pattern 2: Multiple Related Changes
+
+```
+Changes: Party added + Attorney assigned
+Options:
+  A) Send 2 events: CaseParty + CasePartyAttorney
+  B) Send 1 event: CaseInitiated (processes everything)
+
+Recommendation: Use CaseInitiated for bulk changes
+```
+
+### Pattern 3: Security Change (Time-Critical)
+
+```
+Change: Case sealed
+Action: Send CaseSecurity event IMMEDIATELY (synchronous)
+Result: GetCase called with high priority, case hidden within seconds
+```
+
+[More patterns →](./workflows.md#common-patterns)
+
+---
+
+## Performance Guidelines
+
+### Message Size
+- **Target:** < 5 KB per message
+- **Maximum:** < 50 KB
+
+### Frequency
+- **Typical:** 10-50 events per minute (average court)
+- **Peak:** 100-200 events per minute (large court)
+- **Burst:** System handles spikes well
+
+### Timing
+- **Event delivery:** < 1 second
+- **GetCase triggered:** < 5 seconds after event
+- **Total latency:** < 30 seconds (change to visible in UI)
+
+---
+
+## Quick Start Checklist
+
+### For Developers Implementing NotifyCaseEvent
+
+- [ ] Review [EventTypes Guide](./event-types.md) for all supported types
+- [ ] Understand [EventType mapping](./event-types.md#eventtype-mapping)
+- [ ] Review [request/response specification](./request-response.md)
+- [ ] Implement event generation for all change scenarios
+- [ ] Add hooks to CMS change operations:
+  - [ ] Party add/edit/delete
+  - [ ] Filing creation
+  - [ ] Security changes (critical!)
+  - [ ] Disposition entry
+  - [ ] Judge/division reassignment
+- [ ] Implement async messaging (recommended)
+- [ ] Add retry logic with exponential backoff
+- [ ] Add comprehensive logging
+- [ ] Test all EventTypes
+- [ ] Verify security events sent immediately
+
+### For Operations Teams
+
+- [ ] Monitor event delivery success rate
+- [ ] Alert on delivery failures
+- [ ] Monitor event-to-GetCase latency
+- [ ] Review error logs regularly
+- [ ] Ensure mTLS certificates valid
+
+---
+
+## Related APIs
+
+NotifyCaseEvent works in coordination with:
+
+**Triggers GetCase:**
+- CMS sends NotifyCaseEvent → re:Search calls GetCase
+
+**Workflow:**
+```
+NotifyCaseEvent (CMS → re:Search) → GetCase (re:Search → CMS)
+```
+
+**Related:**
+- [GetCase API](../getcase/) - Data retrieval triggered by events
+- [NotifyDocketingComplete](../notifydocketingcomplete/) - Docketing confirmation
+- [RecordFiling](../recordfiling/) - Filing submission (via EFM)
+
+---
+
+## Authentication
+
+NotifyCaseEvent requires mutual TLS (mTLS) authentication.
+
+**Certificate requirements:**
+- Valid mTLS certificate issued by Tyler
+- Certificate must not be expired
+- Proper certificate chain validation
+- Secure certificate storage
+
+[Authentication details →](../common-headers-and-auth.md)
+
+---
+
+## Next Steps
+
+### New to NotifyCaseEvent?
+1. Read [Request & Response Specification](./request-response.md) to understand the message format
+2. Review [Event Types Guide](./event-types.md) to learn all supported event types
+3. Study [Workflows](./workflows.md) to see NotifyCaseEvent in context
+
+### Implementing NotifyCaseEvent?
+1. Start with [Request & Response Specification](./request-response.md)
+2. Review all [Event Types](./event-types.md) and when to use each
+3. Download [example XML files](./examples/)
+4. Test with simple events first
+5. Use [Workflows guide](./workflows.md) for integration patterns
+
+### Troubleshooting Issues?
+1. Check [common issues](#common-issues) above
+2. Review [Workflows troubleshooting](./workflows.md#troubleshooting)
+3. Verify [EventType mapping](./event-types.md#eventtype-mapping)
+4. Contact your Tyler Technical Project Manager
+
+---
+
+## Additional Resources
+
+- [ECF Mode Implementation](../../integration-modes/ecf-mode/) - Overall ECF integration
+- [GetCase API](../getcase/) - What happens after NotifyCaseEvent
+- [Event Type Logic](../../support-playbook/event-type-logic.md) - Decision guide
+- [Troubleshooting Guide](../../support-playbook/troubleshooting.md) - Common problems
+
+---
+
+**Last Updated:** December 2025

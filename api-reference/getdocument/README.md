@@ -1,352 +1,328 @@
-# GetDocument
+# GetDocument API
 
-**Navigation:**  
-[Home](../../../README.md) › [Technical Documentation](../../README.md) › [API Reference](../README.md) › GetDocument
+**Navigation:** [Home](../../../README.md) › [Technical Documentation](../../README.md) › [API Reference](../README.md) › GetDocument
 
-GetDocument retrieves a document binary for viewing in re:SearchTX.  
-Access is controlled by case security, document security, and JCIT visibility rules.
-
----
-
-## Purpose
-
-GetDocument is used to:
-
-- Retrieve the binary PDF/TIFF document  
-- Enforce JCIT visibility and security  
-- Display documents in re:Search’s viewer  
-- Validate document-level metadata accuracy  
+## Quick Navigation
+- [Request & Response Specification](./request-response.md) - Technical details and examples
+- [Security Guide](./security-guide.md) - Document security enforcement rules
+- [Workflows](./workflows.md) - When and how documents are retrieved
+- [XML Examples](./examples/) - Sample request/response files
 
 ---
 
-## Transport and Protocol
+## What is GetDocument?
+
+GetDocument is the **document retrieval API** that returns binary document content (PDFs, TIFFs, etc.) when users view or download documents in re:Search. It's called on-demand and must enforce document-level security.
+
+**Think of it as:** re:Search asking "Give me the PDF for document ID 12345"
+
+---
+
+## At a Glance
 
 | Property | Value |
 |---------|--------|
-| Direction | re:Search → CMS |
-| Protocol | SOAP 1.2 over HTTPS |
-| Security | Mutual TLS |
-| Standard | OASIS ECF |
-| Message Type | GetDocumentRequest / GetDocumentResponse |
-
-Authentication details:  
-[Common Headers & Auth](../common-headers-and-auth.md)
-
----
-
-## When This API Is Used
-
-re:Search calls GetDocument:
-
-- When a user clicks a document in the UI  
-- When indexing requires document metadata validation  
-- When the system detects a missing or stale binary  
+| **Direction** | re:Search → CMS |
+| **Protocol** | SOAP 1.2 over HTTPS |
+| **Security** | Mutual TLS (mTLS) |
+| **Standard** | OASIS ECF 4.x |
+| **Message Type** | DocumentQueryMessage / DocumentResponseMessage |
+| **Required?** | Yes (ECF/CIP modes) - Optional if using Batch Mode |
+| **Returns** | Base64-encoded document binary + metadata |
 
 ---
 
-## Behavior Summary
+## When GetDocument is Called
 
-re:Search:
+GetDocument is triggered when:
 
-- Evaluates CaseSecurity and DocumentSecurity  
-- Confirms JCIT role-based access  
-- Requests the document binary  
-- Displays or denies access accordingly  
+1. **User clicks document in UI** - User wants to view or download
+2. **Document preview needed** - Thumbnail or preview generation
+3. **NotifyCaseEvent received** - EventTypes: CaseFiling, DocumentSecurity, DocumentFiling
+4. **Background validation** - re:Search verifies document availability
 
-Incorrect security values = locked documents or incorrect visibility.
-
----
-## Processing Workflow
-<!-- XML Placeholder: Insert sample GetDocumentResponse here -->
+**Frequency:** On-demand per user action (not bulk retrieval)
 
 ---
-## XML Example
+
+## What GetDocument Returns
+
+**Document binary and metadata:**
+- Base64-encoded PDF/TIFF/image content
+- Document description and filing code
+- File name and size
+- Document type and category (LEAD/ATTACHMENT/EXHIBIT)
+- Post date
+
+**Critical:** Returns binary ONLY - no case metadata, parties, or filings (use GetCase for that)
+
+---
+
+## Quick Example
+
+### Request (What re:Search Sends)
+
 ```xml
-<DocumentResponseMessage
-    xmlns="urn:oasis:names:tc:legalxml-courtfiling:schema:xsd:DocumentResponseMessage-4.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:ecf="urn:oasis:names:tc:legalxml-courtfiling:schema:xsd:CommonTypes-4.0"
-    xmlns:tyler="urn:tyler:ecf:extensions:Common"
-    xmlns:nc="http://niem.gov/niem/niem-core/2.0"
-    xmlns:s="http://niem.gov/niem/structures/2.0"
-    xmlns:j="http://niem.gov/niem/domains/jxdm/4.0"
-    xmlns:courtNS="urn:tyler:ecf:extensions:CourtCase"
-    xmlns:urn="urn:oasis:names:tc:legalxml-courtfiling:wsdl:WebServiceMessagingProfile-Definitions-4.0"
-    xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
-    xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
-    <!-- [EXPECTED] echo of sender -->
-    <SendingMDELocationID xmlns="urn:oasis:names:tc:legalxml-courtfiling:schema:xsd:CommonTypes-4.0">
-        <IdentificationID xmlns="http://niem.gov/niem/niem-core/2.0">
-            https://www.idocket.com/
-        </IdentificationID>
-    </SendingMDELocationID>
-    <!-- [REQUIRED] success when 0 -->
-    <Error xmlns="urn:oasis:names:tc:legalxml-courtfiling:schema:xsd:CommonTypes-4.0">
-        <ErrorCode>0</ErrorCode>
-        <ErrorText>No error</ErrorText>
-    </Error>
-    <Document xmlns="urn:oasis:names:tc:legalxml-courtfiling:schema:xsd:CommonTypes-4.0">
-        <!-- [REQUIRED] authoritative document identifiers -->
-        <DocumentIdentification xmlns="http://niem.gov/niem/niem-core/2.0">
-            <IdentificationID>13763456</IdentificationID>
-            <IdentificationCategoryText>CMSID</IdentificationCategoryText>
-        </DocumentIdentification>
-        <!-- [EXPECTED] optional metadata for audit/UI -->
-        <DocumentMetadata>
-            <RegisterActionDescriptionText xmlns="http://niem.gov/niem/domains/jxdm/4.0">
-                evtapp
-            </RegisterActionDescriptionText>
-        </DocumentMetadata>
-        <DocumentRendition>
-            <!-- [EXPECTED] high-level description -->
-            <DocumentDescriptionText xmlns="http://niem.gov/niem/niem-core/2.0">
-                APPLICATION
-            </DocumentDescriptionText>
-            <!-- [EXPECTED] post date/time -->
-            <DocumentPostDate xmlns="http://niem.gov/niem/niem-core/2.0">
-                <DateTime>2025-01-29T00:00:00</DateTime>
-            </DocumentPostDate>
-            <DocumentRenditionMetadata>
-                <DocumentAttachment>
-                    <!-- [REQUIRED] inline binary payload -->
-                    <BinaryBase64Object xmlns="http://niem.gov/niem/niem-core/2.0">
-                        rt556gfdyKGphaW1lKS9DcmVhdGlvbkRhdGUoRDoyMDA5MTAxMzE0NTEzMykvQ3JlYXRvcihQU2NyaXB0NS5kbGwgVmV+GX0y38QNfN1BzCmVuZHN0cmVhbQ1lbmRvYmoNc3RhcnR4cmVmDTg2Njk0DSUlRU9GCg==
-                    </BinaryBase64Object>
-                    <!-- [EXPECTED] rendition metadata -->
-                    <BinaryDescriptionText xmlns="http://niem.gov/niem/niem-core/2.0">APPLICATION</BinaryDescriptionText>
-                    <BinaryFormatStandardName xmlns="http://niem.gov/niem/niem-core/2.0">PUB</BinaryFormatStandardName>
-                    <BinaryLocationURI xmlns="http://niem.gov/niem/niem-core/2.0">1376273.pdf</BinaryLocationURI>
-                    <BinarySizeValue xmlns="http://niem.gov/niem/niem-core/2.0">87217</BinarySizeValue>
-                    <BinaryCategoryText xmlns="http://niem.gov/niem/niem-core/2.0">LEAD</BinaryCategoryText>
+<DocumentQueryMessage>
+  <!-- Which court? -->
+  <j:CaseCourt>
+    <nc:OrganizationIdentification>
+      <nc:IdentificationID>harris:dcccv</nc:IdentificationID>
+    </nc:OrganizationIdentification>
+  </j:CaseCourt>
+  
+  <!-- Which case? -->
+  <nc:CaseTrackingID>054Rti3-3252-4510-acdc-1205ca5aa5a2</nc:CaseTrackingID>
+  
+  <!-- Which document? -->
+  <nc:CaseDocketID>9Ghif57gh-1617-4bc7-83e0-6971c8cb2712</nc:CaseDocketID>
+</DocumentQueryMessage>
+```
 
-                    <!-- [NEW][OPTIONAL] integrity hints -->
-                    <!-- <Hash xmlns="http://niem.gov/niem/niem-core/2.0">sha256:...</Hash> -->
-                </DocumentAttachment>
-            </DocumentRenditionMetadata>
-        </DocumentRendition>
-    </Document>
+### Response (What CMS Returns)
+
+```xml
+<DocumentResponseMessage>
+  <Error>
+    <ErrorCode>0</ErrorCode>
+    <ErrorText>No error</ErrorText>
+  </Error>
+  <Document>
+    <DocumentIdentification>
+      <IdentificationID>13763456</IdentificationID>
+      <IdentificationCategoryText>CMSID</IdentificationCategoryText>
+    </DocumentIdentification>
+    <DocumentRendition>
+      <DocumentDescriptionText>APPLICATION</DocumentDescriptionText>
+      <DocumentRenditionMetadata>
+        <DocumentAttachment>
+          <!-- Base64-encoded PDF content -->
+          <BinaryBase64Object>JVBERi0xLjQKJw...</BinaryBase64Object>
+          <BinaryLocationURI>1376273.pdf</BinaryLocationURI>
+          <BinarySizeValue>87217</BinarySizeValue>
+          <BinaryFormatStandardName>PDF</BinaryFormatStandardName>
+        </DocumentAttachment>
+      </DocumentRenditionMetadata>
+    </DocumentRendition>
+  </Document>
 </DocumentResponseMessage>
+```
+
+[See complete examples →](./request-response.md#complete-examples)
+
+---
+
+## Key Requirements
+
+### Must Include (Required)
+- ✅ Base64-encoded binary content (`BinaryBase64Object`)
+- ✅ Document CMSID (`DocumentIdentification/IdentificationID`)
+- ✅ File name (`BinaryLocationURI`)
+- ✅ File size in bytes (`BinarySizeValue`)
+- ✅ Document format (`BinaryFormatStandardName` - PDF, TIFF, etc.)
+- ✅ Filing code (`RegisterActionDescriptionText`)
+- ✅ Error code and text (0 = success)
+
+### Must Enforce (Security)
+- ✅ Case-level security (most restrictive wins)
+- ✅ Document-level security settings
+- ✅ User authorization checks
+- ✅ Return SOAP Fault if access denied
+
+### Performance Expectations
+- **Target:** < 2 seconds response time
+- **Maximum:** < 5 seconds
+- **File size:** Up to 50 MB supported
+
+---
+
+## Common Issues
+
+| Issue | Cause | Impact |
+|-------|-------|--------|
+| **Empty BinaryBase64Object** | Document file not found or not encoded | User gets 0 KB file or error |
+| **Missing CMSID** | Document ID from GetCase doesn't match | Document fails to load |
+| **Wrong security settings** | Security not enforced | Sealed docs visible to public |
+| **Timeout** | Large file or slow database | User sees "Document unavailable" |
+| **Invalid Base64** | Encoding error | Document won't open |
+
+[Complete troubleshooting →](./workflows.md#troubleshooting)
+
+---
+
+## Document Security Enforcement
+
+**Critical:** GetDocument MUST enforce security - never return documents the user shouldn't access.
+
+### Security Hierarchy (Most Restrictive Wins)
+
+```
+Case Security + Document Security = Effective Security
+```
+
+| Case Security | Document Security | Can User Access? |
+|---------------|-------------------|------------------|
+| Sealed | Any | **NO** - Entire case sealed |
+| Public | Public | **YES** - Public can view |
+| Public | Restricted | **LIMITED** - Attorneys of record only |
+| Public | NoAccess | **NO** - Document completely hidden |
+
+**Example:**
+- Case = Public
+- Document = Restricted
+- User = Public
+- **Result:** Access denied
+
+[Complete security rules →](./security-guide.md)
+
+---
+
+## Document CMSID Mapping
+
+**Critical:** The document ID in GetDocument request comes from GetCase response.
+
+**GetCase provides:**
+```xml
+<DocumentAttachment>
+  <tyler:DocumentAttachmentIdentification>
+    <nc:IdentificationID>DOC-12345</nc:IdentificationID> ← This CMSID
+  </tyler:DocumentAttachmentIdentification>
+</DocumentAttachment>
+```
+
+**GetDocument receives:**
+```xml
+<nc:CaseDocketID>DOC-12345</nc:CaseDocketID> ← Must match!
+```
+
+**If CMSID changes or is incorrect:**
+- Document fails to load
+- "Document not found" errors
+- Broken links in UI
+
+---
+
+## Supported File Types
+
+| File Type | Supported | Common Use | Notes |
+|-----------|-----------|------------|-------|
+| **PDF** | ✅ | Most documents | Preferred format |
+| **TIFF** | ✅ | Scanned documents | Multi-page supported |
+| **JPEG/PNG** | ✅ | Exhibits, photos | Single images |
+| **Word/Excel** | ✅ | Raw office docs | Must Base64-encode |
+| **Audio/Video** | ⚠️ | Rare | Allowed but not recommended |
+
+**CMS must:**
+- Read file from storage
+- Base64 encode the binary content
+- Set correct `BinaryFormatStandardName`
+
+---
+
+## Caching Behavior
+
+**re:Search caches documents** to reduce calls to CMS:
+
+- **Cache duration:** Configurable (typically 30-90 days)
+- **When cache expires:** GetDocument called again
+- **When cache bypassed:** DocumentSecurity events trigger refresh
+
+**CMS should always return current document** - re:Search handles caching.
+
+---
+
+## Quick Start Checklist
+
+### For Developers Implementing GetDocument
+
+- [ ] Review [Request & Response Specification](./request-response.md)
+- [ ] Understand [security enforcement rules](./security-guide.md)
+- [ ] Review [workflows](./workflows.md) to see when GetDocument is called
+- [ ] Implement document retrieval from storage
+- [ ] Add Base64 encoding
+- [ ] Implement security checks (case + document level)
+- [ ] Add error handling (document not found, access denied)
+- [ ] Test with all file types (PDF, TIFF, images)
+- [ ] Verify CMSIDs match GetCase response
+- [ ] Test response times (< 2 seconds target)
+- [ ] Test with sealed/restricted documents
+- [ ] Validate with [certification checklist](./security-guide.md#certification-checklist)
+
+### For Operations Teams
+
+- [ ] Monitor GetDocument response times
+- [ ] Alert on timeouts (> 5 seconds)
+- [ ] Monitor error rates
+- [ ] Verify document storage accessible
+- [ ] Ensure mTLS certificates valid
+- [ ] Review security denial logs
+
+---
+
+## Related APIs
+
+GetDocument works in coordination with:
+
+**Provides Document IDs:**
+- [GetCase API](../getcase/) - Returns document CMSIDs in response
+- [NotifyDocketingComplete](../notifydocketingcomplete/) - Provides document IDs after docketing
+
+**Triggers GetDocument:**
+- [NotifyCaseEvent](../notifycaseevent/) - CaseFiling, DocumentSecurity, DocumentFiling events
+
+**Workflow:**
+```
+GetCase returns CMSID → User clicks document → GetDocument retrieves binary
 ```
 
 ---
 
-## Example XML Files
+## Authentication
 
-| File | Description |
-|------|-------------|
-| [getdocument-request-annotated.xml](./examples/getdocument-request-annotated.xml) | Annotated request |
-| [getdocument-request-clean.xml](./examples/getdocument-request-clean.xml) | Clean request |
-| [getdocument-response-annotated.xml](./examples/getdocument-response-annotated.xml) | Annotated response |
+GetDocument requires mutual TLS (mTLS) authentication.
 
----
+**Certificate requirements:**
+- Valid mTLS certificate issued by Tyler
+- Certificate must not be expired
+- Proper certificate chain validation
+- Secure certificate storage
 
-## Related API Pages
-
-- [GetCase](../getcase/README.md)  
-- [RecordFiling](../recordfiling/README.md)  
-- [NotifyCaseEvent](../notifycaseevent/README.md)  
-- [NotifyDocketingComplete](../notifydocketingcomplete/README.md)  
+[Authentication details →](../common-headers-and-auth.md)
 
 ---
 
-## Related Topics
+## Next Steps
 
-- [Security Logic](../../support-playbook/security-logic.md)
-- [Registered User Matrix](../../support-playbook/registered-user-matrix.md)
-- [Troubleshooting Guide](../../support-playbook/troubleshooting.md)
-- [Full XML Library](../../xml-library/xml-library.md)
+### New to GetDocument?
+1. Read [Request & Response Specification](./request-response.md) to understand the API structure
+2. Review [Security Guide](./security-guide.md) to understand enforcement rules
+3. Study [Workflows](./workflows.md) to see GetDocument in context
 
+### Implementing GetDocument?
+1. Start with [Request & Response Specification](./request-response.md)
+2. Download [example XML files](./examples/)
+3. Implement document retrieval logic
+4. Add Base64 encoding
+5. Implement security enforcement using [Security Guide](./security-guide.md)
+6. Test with different file types
+7. Complete [certification checklist](./security-guide.md#certification-checklist)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# GetDocument – re:Search Integration API
-
-`GetDocument` is the API re:Search uses to retrieve **document binaries** from the CMS.  
-Every time a user opens a document in the re:Search UI, this operation is called.
-
-This API does **not** return case metadata or filing information — only the requested binary stream (PDF, TIFF, JPEG, etc.) and minimal metadata required to fulfill the file request.
-
-GetDocument is required in all **ECF Mode** and **Hybrid** integrations unless documents are pre-staged via Batch Mode (rare).
+### Troubleshooting Issues?
+1. Check [common issues](#common-issues) above
+2. Review [Workflows troubleshooting](./workflows.md#troubleshooting)
+3. Verify CMSIDs match GetCase response
+4. Check security settings
+5. Contact your Tyler Technical Project Manager
 
 ---
 
-## Purpose
+## Additional Resources
 
-GetDocument allows re:Search to:
-
-- Retrieve document binaries securely on demand  
-- Enforce document-level security from CMS rules  
-- Maintain a single authoritative source for document content  
-- Fetch lead documents, attachments, exhibits, and supplemental filings  
-
-GetDocument is **never used** to return metadata about filings, parties, or cases — that information must come from `GetCase`.
+- [GetCase API](../getcase/) - Provides document CMSIDs
+- [NotifyCaseEvent API](../notifycaseevent/) - Events that trigger GetDocument
+- [Security Logic](../../support-playbook/security-logic.md) - Overall security rules
+- [Troubleshooting Guide](../../support-playbook/troubleshooting.md) - Common problems
 
 ---
 
-## Transport & Protocol
-
-| Property | Value |
-|---------|--------|
-| Direction | **re:Search → CMS** |
-| Protocol | SOAP 1.2 over HTTPS |
-| Security | Mutual TLS (mTLS) |
-| Standard | OASIS ECF 4.x DocumentQuery/DocumentResponse |
-| Messages | `GetDocumentRequest` / `GetDocumentResponse` |
-
-Header requirements:  
-➡️ `../../common/common-headers-and-auth.md`
-
----
-
-## When re:Search Calls GetDocument
-
-re:Search calls GetDocument when:
-
-1. A user clicks *View Document* in the UI  
-2. A PDF thumbnail or preview is required  
-3. Background validation jobs confirm document availability  
-4. A document ID appears in GetCaseResponse and re:Search needs to verify accessibility  
-
-**Important:**  
-If GetCaseResponse provides incorrect or missing `CMSID` / `DocumentSecurity`, GetDocument may fail — these failures must be fixed in GetCase, not in GetDocument.
-
----
-
-## Required & Expected Fields
-
-### Request Fields
-
-| Element | Requirement | Notes |
-|---------|------------|-------|
-| `nc:IdentificationID` | **REQUIRED** | Must match the CMS document ID in GetCase |
-| `CourtIdentifier` | EXPECTED | Needed in multi-court CMS implementations |
-| Authentication headers | **REQUIRED** | mTLS + Auth header chain |
-
----
-
-### Response Fields
-
-| Element | Requirement | Notes |
-|---------|------------|-------|
-| Binary stream (`nc:Base64BinaryObject`) | **REQUIRED** | Must be valid Base64 PDF/TIFF/etc. |
-| `nc:DocumentDescriptionText` | EXPECTED | Used in UI display |
-| `nc:BinaryFormatStandardName` | EXPECTED | PDF, TIFF, JPEG |
-| `tyler:DocumentSecurity` | EXPECTED | Should match what is in GetCase |
-| `nc:BinarySizeValue` | EXPECTED | Helps UI pre-allocation |
-| `tyler:PageCount` | EXPECTED | If available; improves UI |
-
----
-
-## High-Level Workflow
-
-**Diagram placeholder**
-
-(Insert mermaid diagram or image later.)
-
-### Steps
-
-1. User requests document  
-2. re:Search issues `GetDocumentRequest`  
-3. CMS authenticates request via mTLS  
-4. CMS returns Base64-encoded binary  
-5. re:Search delivers document to UI  
-6. Security is validated per CMS response + local rules  
-
----
-
-## Document Mapping Rules
-
-GetDocument relies on the `nc:IdentificationID` provided in **GetCaseResponse**, specifically within:
-
-- `ecf:DocumentRendition`
-- `ecf:DocumentAttachment`
-- `tyler:DocumentAttachmentIdentification`
-
-If the CMS changes document IDs or fails to reference attachments correctly:
-
-| Problem | Result |
-|---------|--------|
-| Missing CMSID | Document fails to load |
-| CMSID changes | Duplicate or “missing document” errors |
-| Incorrect `DocumentSecurity` | Document appears in UI when it shouldn’t (or vice versa) |
-| Wrong BinaryLocationURI (Batch Mode) | Document retrieval fails |
-
----
-
-## File Types & Expectations
-
-| File Type | Supported | Notes |
-|-----------|-----------|-------|
-| PDF | ✔ | Most common |
-| TIFF | ✔ | Multi-page allowed |
-| JPEG/PNG | ✔ | Usually exhibits or attachments |
-| Word/Excel | ✔ | CMS must Base64-encode raw binary |
-| Audio/Video | ⚠ | Allowed but not recommended |
-
----
-
-## Error Handling
-
-Typical CMS-side validation must include:
-
-- Document not found → SOAP Fault  
-- Unauthorized (document security) → SOAP Fault  
-- CMS connectivity failure → SOAP Fault  
-- Unsupported format → SOAP Fault  
-- Invalid Base64 → SOAP Fault  
-
-On the re:Search side, these appear as:
-
-- "Document unavailable"  
-- "Security restrictions apply"  
-- "CMS returned an invalid or empty response"  
-
----
-
-## Example Files
-
-| Example | File |
-|---------|------|
-| Annotated Request | [examples/getdocument-request-annotated](./examples/getdocument-request-annotated) |
-| Clean Request | [examples/getdocument-request-clean](./examples/getdocument-request-clean) |
-| Annotated Response | [examples/getdocument-response-annotated](./examples/getdocument-response-annotated) |
-
----
-
-## Related API Pages
-
-| API | Link | Purpose |
-|------|------|---------|
-| **GetCase** | [../getcase/README.md](../getcase/README.md) | Provides CMSID + document metadata |
-| **NotifyCaseEvent** | [../notifycaseevent/README.md](../notifycaseevent/README.md) | Triggers case updates |
-| **RecordFiling** | [../recordfiling/README.md](../recordfiling/README.md) | Introduces new documents |
-| **NotifyDocketingComplete** | [../notifydocketingcomplete/README.md](../notifydocketingcomplete/README.md) | Provides CMS document IDs |
-
----
-
-Back to API Reference Index:  
-➡️ [../README.md](../README.md)
+**Last Updated:** December 2025

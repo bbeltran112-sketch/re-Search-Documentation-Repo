@@ -1,192 +1,250 @@
-# GetCase
+# GetCase API
 
-**Navigation:**  
-[Home](../../../README.md) › [Technical Documentation](../../README.md) › [API Reference](../README.md) › GetCase
+**Navigation:** [Home](../../../README.md) › [Technical Documentation](../../README.md) › [API Reference](../README.md) › GetCase
 
-GetCase returns authoritative case metadata, including filings, parties, attorneys, docket entries, and security.  
-re:Search evaluates only the XML elements relevant to the EventType that triggered the lookup.
-
----
-
-## Purpose
-
-GetCase provides the complete, authoritative CMS dataset so re:Search can:
-
-- Reindex case details  
-- Render accurate UI information  
-- Evaluate security and visibility  
-- Update filings, parties, documents, and metadata  
+## Quick Navigation
+- [Request & Response Specification](./request-response.md) - Technical details and examples
+- [Behavior Guide](./behavior-guide.md) - How re:Search processes GetCase
+- [Workflows](./workflows.md) - Sequence diagrams and integration patterns
+- [XML Examples](./examples/) - Sample request/response files
 
 ---
 
-## Transport and Protocol
+## What is GetCase?
+
+GetCase is the **data retrieval API** that returns complete, authoritative case information from your CMS to re:Search. It's called in response to events and provides the full case dataset needed to update the re:Search index.
+
+**Think of it as:** re:Search asking "Show me the current state of this case"
+
+---
+
+## At a Glance
 
 | Property | Value |
 |---------|--------|
-| Direction | re:Search → CMS |
-| Protocol | SOAP 1.2 over HTTPS |
-| Security | Mutual TLS |
-| Standard | OASIS ECF |
-| Message Type | GetCaseRequest / GetCaseResponse |
-
-Authentication details:  
-[Common Headers & Auth](../common-headers-and-auth.md)
+| **Direction** | re:Search → CMS |
+| **Protocol** | SOAP 1.2 over HTTPS |
+| **Security** | Mutual TLS (mTLS) |
+| **Standard** | OASIS ECF 4.x |
+| **Message Type** | GetCaseRequest / GetCaseResponse |
+| **Required?** | Yes (all ECF/CIP integrations) |
 
 ---
 
-## When This API Is Used
+## When GetCase is Called
 
-GetCase is called immediately after:
+GetCase is triggered immediately after:
 
-- A NotifyCaseEvent is received  
-- A NotifyDocketingComplete is processed  
-- A system-wide reindex operation is triggered  
+1. **NotifyCaseEvent received** - CMS notifies re:Search of a case change
+2. **NotifyDocketingComplete received** - Filing has been docketed
+3. **System reindex operation** - Manual or scheduled refresh
 
----
-
-## Behavior Summary
-
-re:Search:
-
-- Calls GetCase with the CaseTrackingID and CourtIdentifier  
-- Receives the full case dataset  
-- Processes only the XML sections relevant to the originating EventType  
-- Updates search indexes and UI accordingly  
-
-Incorrect or incomplete GetCaseResponse often results in:
-
-- Visibility mismatches  
-- Missing filings  
-- Incorrect security  
-
----
-## Processing Workflow
-
-### NotifyCaseEvent Trigger (ECF mode)
-```mermaid
-sequenceDiagram
-    participant CMS as Case Management System (Court)
-    participant EFM as E-Filing Manager
-    participant MQ as RabbitMQ
-    participant RS as re:Search
-
-    Note over CMS: An event occurs in the case lifecycle
-    CMS->>EFM: NotifyCaseEvent (eventType, case identifiers)
-    EFM->>MQ: Publish event message
-    MQ-->>RS: Deliver event message
-    Note over RS: Event consumed<br/>Determine follow-up actions
-    RS->>EFM: GetCase() and/or GetDocument()
-    EFM->>CMS: Proxy request
-    CMS-->>EFM: Case/Document data
-    EFM-->>RS: Return requested data
-    Note over RS: Update case index and UI
+**Example flow:**
 ```
----
-### NotifyDocketingComplete Trigger (ECF mode)
-```mermaid
-sequenceDiagram
-    participant CMS as Clerk Case Management System
-    participant EFM as E-Filing Manager
-    participant RS as re:Search
-
-    Note over CMS: Case is fully docketed
-    CMS->>EFM: NotifyDocketingComplete
-    EFM-->>CMS: Message Receipt (ack)
-    Note over EFM: Notify re:Search of new/updated case
-    EFM->>RS: Event notification (new case recorded)
-    Note over RS: Pull filing metadata
-    RS->>EFM: GetCase (Request for filing metadata)
-    EFM->>CMS: Proxy GetCase
-    CMS-->>EFM: CaseResponseMessage (filing payload)
-    EFM-->>RS: CaseResponseMessage (filing payload)
-    Note over RS: Index filing and refresh UI
+CMS change happens → NotifyCaseEvent sent → re:Search calls GetCase → Case updated
 ```
----
-### RecordFiling Trigger (ECF mode)
-```mermaid
-sequenceDiagram
-    participant EFM as E-Filing Manager
-    participant CMS as Clerk Case Management System
-    participant RS as re:Search
 
-    Note over EFM: Instruct CMS to officially record the filing
-    EFM->>CMS: RecordFiling (filing package)
-    CMS-->>EFM: Message Receipt / success
-    Note over EFM: Notify re:Search that the case/filing was recorded
-    EFM->>RS: NotifyNewCase (or similar)
-    Note over RS: Request initial case data for first index
-    RS->>CMS: GetCase (initial case metadata) via EFM
-    CMS-->>RS: CaseResponseMessage (case metadata) via EFM
-    Note over RS: Create initial case in index
-```
 ---
 
+## What GetCase Returns
 
-## XML Example
+**Complete case dataset including:**
+- Case metadata (number, title, type, status, dates)
+- All filing events and docket entries
+- All parties with roles and contact information
+- All attorneys with party associations
+- All documents with metadata (no binaries)
+- Current security settings (case and document level)
+- Judge assignments and court information
+
+**Critical:** GetCase must return the **current, complete state** of the case - not cached, not partial.
+
+---
+
+## Quick Example
+
+### Request
 ```xml
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                  xmlns:ecf="urn:oasis:names:tc:legalxml-courtfiling:wsdl:WebServiceMessagingProfile-Definitions-4.0"
-                  xmlns:tyler="urn:tyler:ecf:extensions:GetCaseMessage"
-                  xmlns:nc="http://niem.gov/niem/niem-core/2.0">
-  <soapenv:Header/>
-  <soapenv:Body>
-    <ecf:GetCaseRequest>
-      <tyler:GetCaseRequestMessage>
+<ecf:GetCaseRequest>
+  <tyler:GetCaseRequestMessage>
+    <tyler:MessageID>unique-request-id</tyler:MessageID>
+    <tyler:RequestDateTime>2025-12-04T10:30:00Z</tyler:RequestDateTime>
+    
+    <!-- Which court? -->
+    <tyler:CourtIdentification>
+      <nc:IdentificationID>Hopkins:cc</nc:IdentificationID>
+    </tyler:CourtIdentification>
+    
+    <!-- Which case? -->
+    <tyler:CaseTrackingID>CASE-12345678</tyler:CaseTrackingID>
+    
+    <!-- Include documents and parties? -->
+    <tyler:IncludeDocumentMetadata>true</tyler:IncludeDocumentMetadata>
+    <tyler:IncludePartyInformation>true</tyler:IncludePartyInformation>
+  </tyler:GetCaseRequestMessage>
+</ecf:GetCaseRequest>
+```
 
-        <!-- [REQUIRED] unique per request -->
-        <tyler:MessageID>0f1c68b3-8a55-4f7c-a41a-123456789abc</tyler:MessageID>
+### Response (Abbreviated)
+```xml
+<ecf:GetCaseResponse>
+  <tyler:GetCaseResponseMessage>
+    <ecf:Case>
+      <ecf:CaseTrackingID>CASE-12345678</ecf:CaseTrackingID>
+      <ecf:CaseTitleText>Smith v. Jones</ecf:CaseTitleText>
+      <tyler:CaseSecurity>PublicFilingPublicView</tyler:CaseSecurity>
+      
+      <!-- Parties, filings, documents... -->
+    </ecf:Case>
+  </tyler:GetCaseResponseMessage>
+</ecf:GetCaseResponse>
+```
 
-        <!-- [REQUIRED] UTC -->
-        <tyler:RequestDateTime>2025-11-11T10:30:00Z</tyler:RequestDateTime>
+[See complete examples →](./request-response.md#complete-examples)
 
-        <!-- [REQUIRED] mapped court/jurisdiction -->
-        <tyler:CourtIdentification>
-          <nc:IdentificationID>Hopkins:cc</nc:IdentificationID>
-        </tyler:CourtIdentification>
+---
 
-        <!-- [REQUIRED] authoritative CMS case id -->
-        <tyler:CaseTrackingID>CASE-12345678</tyler:CaseTrackingID>
+## Key Requirements
 
-        <!-- [OPTIONAL][RECOMMENDED] include doc metadata for Document correlation -->
-        <tyler:IncludeDocumentMetadata>true</tyler:IncludeDocumentMetadata>
+### Must Include (Required)
+- ✅ Complete case payload (not partial updates)
+- ✅ Case security settings (`tyler:CaseSecurity`)
+- ✅ All filing events with timestamps (`ecf:ActivityDate`)
+- ✅ Document CMSIDs (`nc:IdentificationID`) for all documents
+- ✅ Document page counts (`tyler:PageCount`) for all documents
+- ✅ Valid ISO 8601 timestamps (UTC)
 
-        <!-- [OPTIONAL][RECOMMENDED] include parties/attorneys -->
-        <tyler:IncludePartyInformation>true</tyler:IncludePartyInformation>
+### Must Not Include (Forbidden)
+- ❌ Embedded binary document content (use GetDocument instead)
+- ❌ Cached or stale data (always return current state)
+- ❌ Empty `<Case>` blocks (return SOAP fault if case not found)
+- ❌ Partial case data (must be complete for EventType)
 
-        <!-- [NEW][OPTIONAL] return only changes since timestamp (if supported by your CMS) -->
-        <!-- <tyler:SinceDateTime>2025-10-01T00:00:00Z</tyler:SinceDateTime> -->
+### Performance Expectations
+- **Simple cases:** < 1 second response time
+- **Average cases:** < 2 seconds response time
+- **Complex cases:** < 3 seconds response time
+- **Maximum timeout:** 5 seconds
 
-      </tyler:GetCaseRequestMessage>
-    </ecf:GetCaseRequest>
-  </soapenv:Body>
-</soapenv:Envelope>
+---
+
+## Common Issues
+
+| Issue | Cause | Impact |
+|-------|-------|--------|
+| **Missing timestamps** | `ActivityDate` not provided | Filings appear out of order or missing |
+| **Missing CMSIDs** | Document `IdentificationID` not provided | Documents can't be retrieved |
+| **Stale data** | Returning cached response | Changes don't appear in re:Search |
+| **Wrong EventType mapping** | Including irrelevant data blocks | Updates ignored by re:Search |
+| **Missing security** | `CaseSecurity` not provided | Case visibility incorrect |
+
+[Complete troubleshooting guide →](./behavior-guide.md#known-vendor-pitfalls)
+
+---
+
+## Understanding EventType Mapping
+
+**Critical concept:** re:Search only processes XML blocks that match the EventType that triggered GetCase.
+
+| EventType | What Gets Processed | What Gets Ignored |
+|-----------|---------------------|-------------------|
+| `CaseFiling` | Filing events, documents | Parties, security changes |
+| `CaseParty` | Party and attorney data | Filings, documents |
+| `CaseSecurity` | Security settings only | Everything else |
+| `CaseDisposition` | Disposition data | Everything else |
+
+**Why this matters:** If you send a party change but used `CaseFiling` event type, the party change will be ignored.
+
+[Complete EventType mapping →](./behavior-guide.md#eventtype-mapping)
+
+---
+
+## Quick Start Checklist
+
+### For Developers Implementing GetCase
+
+- [ ] Review [Request & Response Specification](./request-response.md)
+- [ ] Understand [EventType mapping rules](./behavior-guide.md#eventtype-mapping)
+- [ ] Review [complete XML examples](./request-response.md#complete-examples)
+- [ ] Test with all EventTypes
+- [ ] Verify security settings correct
+- [ ] Confirm timestamps are ISO 8601 UTC
+- [ ] Ensure CMSIDs stable and persistent
+- [ ] Test response times meet targets (< 3s)
+- [ ] Validate with [certification checklist](./behavior-guide.md#certification-checklist)
+
+### For Operations Teams
+
+- [ ] Monitor GetCase response times
+- [ ] Alert on timeouts or errors
+- [ ] Review error logs regularly
+- [ ] Ensure mTLS certificates valid
+- [ ] Verify data freshness (not cached)
+
+---
+
+## Related APIs
+
+GetCase works in coordination with these APIs:
+
+**Triggers GetCase:**
+- [NotifyCaseEvent](../notifycaseevent/) - Event notification from CMS
+- [NotifyDocketingComplete](../notifydocketingcomplete/) - Docketing confirmation
+- [RecordFiling](../recordfiling/) - Filing recorded (via EFM)
+
+**Called After GetCase:**
+- [GetDocument](../getdocument/) - Retrieve document binaries
+
+**Workflow:**
+```
+NotifyCaseEvent → GetCase → [GetDocument if needed]
 ```
 
 ---
 
-## Example XML Files
+## Authentication
 
-| File | Description |
-|------|-------------|
-| [getcase-request-annotated.xml](./examples/getcase-request-annotated.xml) | Annotated request |
-| [getcase-response-annotated.xml](./examples/getcase-response-annotated.xml) | Annotated response |
-| [getcase-request-withpartiesanddocuments.xml](./examples/getcase-request-withpartiesanddocuments.xml) | Request with full detail |
-| [getcase-request-partys.xml](./examples/getcase-request-partys.xml) | Party-only request |
+GetCase requires mutual TLS (mTLS) authentication.
 
----
+**Certificate requirements:**
+- Valid mTLS certificate issued by Tyler
+- Certificate must not be expired
+- Proper certificate chain validation
+- Secure certificate storage
 
-## Related API Pages
-
-- [RecordFiling](../recordfiling/README.md)  
-- [NotifyDocketingComplete](../notifydocketingcomplete/README.md)  
-- [NotifyCaseEvent](../notifycaseevent/README.md)  
-- [GetDocument](../getdocument/README.md)  
+[Authentication details →](../common-headers-and-auth.md)
 
 ---
 
-## Related Topics
+## Next Steps
 
-- [Security Logic](../../support-playbook/security-logic.md)
-- [Registered User Matrix](../../support-playbook/registered-user-matrix.md)
-- [Troubleshooting Guide](../../support-playbook/troubleshooting.md)
-- [Full XML Library](../../xml-library/xml-library.md)
+### New to GetCase?
+1. Read [Request & Response Specification](./request-response.md) to understand the API structure
+2. Review [Behavior Guide](./behavior-guide.md) to understand how re:Search processes responses
+3. Study [Workflows](./workflows.md) to see GetCase in context
+
+### Implementing GetCase?
+1. Start with [Request & Response Specification](./request-response.md)
+2. Download [example XML files](./examples/)
+3. Test with simple cases first
+4. Use [Behavior Guide](./behavior-guide.md) for validation rules
+5. Complete [certification checklist](./behavior-guide.md#certification-checklist)
+
+### Troubleshooting Issues?
+1. Check [common issues](#common-issues) above
+2. Review [Behavior Guide pitfalls](./behavior-guide.md#known-vendor-pitfalls)
+3. Verify [EventType mapping](./behavior-guide.md#eventtype-mapping)
+4. Contact your Tyler Technical Project Manager
+
+---
+
+## Additional Resources
+
+- [Security Logic](../../support-playbook/security-logic.md) - How security rules work
+- [Registered User Matrix](../../support-playbook/registered-user-matrix.md) - Access control
+- [Troubleshooting Guide](../../support-playbook/troubleshooting.md) - Common problems
+- [Full XML Library](../../xml-library/xml-library.md) - All XML examples
+
+---
+
+**Last Updated:** December 2025
